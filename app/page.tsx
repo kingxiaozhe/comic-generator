@@ -39,6 +39,8 @@ import {
 import { ComicPanel } from "@/lib/types";
 import { ActivationModal } from "@/components/ActivationModal";
 import { ActivationService } from "@/lib/activation";
+import { UserSettingsService } from "@/lib/userSettings";
+import Link from "next/link";
 
 // 图片比例选项
 type AspectRatio = {
@@ -230,8 +232,6 @@ const imageStyles: ImageStyle[] = [
 export default function ComicGenerator() {
   const [content, setContent] = useState("");
   const [selectedCount, setSelectedCount] = useState(4);
-  const [selectedAspectRatio, setSelectedAspectRatio] =
-    useState<string>("16:9");
   const [isGenerating, setIsGenerating] = useState(false);
   const [isGeneratingImages, setIsGeneratingImages] = useState(false);
   const [comicPanels, setComicPanels] = useState<ComicPanel[]>([]);
@@ -240,7 +240,6 @@ export default function ComicGenerator() {
     string | null
   >(null);
   const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
-  const [guidanceScale, setGuidanceScale] = useState(2.5); // 默认值为2.5
   const [seedMode, setSeedMode] = useState<"random" | "fixed">("random"); // 默认为随机
   const [seedValue, setSeedValue] = useState<number>(1234);
   const [selectedModel, setSelectedModel] = useState<string>("qwen-32b"); // 默认使用QwQ-32B模型
@@ -250,7 +249,6 @@ export default function ComicGenerator() {
   const [activeAccordion, setActiveAccordion] = useState<number | null>(null);
   const faqRef = useRef<HTMLDivElement>(null);
   const homeRef = useRef<HTMLDivElement>(null);
-  const [selectedStyle, setSelectedStyle] = useState<string>("anime"); // 默认选择日系动漫风格
 
   // 添加激活码相关状态
   const [showActivationModal, setShowActivationModal] = useState(false);
@@ -258,6 +256,59 @@ export default function ComicGenerator() {
     code: string;
     remainingUses: number;
   } | null>(null);
+
+  // 从UserSettingsService获取初始值
+  const [sceneCount, setSceneCount] = useState<number>(
+    () => UserSettingsService.getSettings().sceneCount
+  );
+
+  const [aspectRatio, setAspectRatio] = useState<string>(
+    () => UserSettingsService.getSettings().aspectRatio
+  );
+
+  const [selectedStyle, setSelectedStyle] = useState<string>(
+    () => UserSettingsService.getSettings().imageStyle
+  );
+
+  const [seed, setSeed] = useState<number>(
+    () => UserSettingsService.getSettings().advancedSettings.seed
+  );
+
+  const [guidanceScale, setGuidanceScale] = useState<number>(
+    () => UserSettingsService.getSettings().advancedSettings.guidanceScale
+  );
+
+  // 更新场景数量
+  const handleSceneCountChange = (count: number) => {
+    setSceneCount(count);
+    setSelectedCount(count); // 同时更新selectedCount
+    UserSettingsService.updateSetting("sceneCount", count);
+  };
+
+  // 更新图片比例
+  const handleAspectRatioChange = (ratio: string) => {
+    setAspectRatio(ratio);
+    UserSettingsService.updateSetting("aspectRatio", ratio);
+  };
+
+  // 更新图片风格
+  const handleStyleChange = (style: string) => {
+    setSelectedStyle(style);
+    UserSettingsService.updateSetting("imageStyle", style);
+  };
+
+  // 更新种子值
+  const handleSeedChange = (value: number) => {
+    setSeed(value);
+    setSeedValue(value); // 同时更新seedValue
+    UserSettingsService.updateAdvancedSetting("seed", value);
+  };
+
+  // 更新引导比例
+  const handleGuidanceScaleChange = (value: number) => {
+    setGuidanceScale(value);
+    UserSettingsService.updateAdvancedSetting("guidanceScale", value);
+  };
 
   // 在useEffect中检查激活码状态
   useEffect(() => {
@@ -383,6 +434,7 @@ export default function ComicGenerator() {
     }
   };
 
+  // 在handleGenerateImages函数中使用aspectRatio
   const handleGenerateImages = async () => {
     if (comicPanels.length === 0) return;
 
@@ -397,9 +449,9 @@ export default function ComicGenerator() {
         },
         body: JSON.stringify({
           panels: comicPanels,
-          aspectRatio: selectedAspectRatio,
+          aspectRatio, // 使用aspectRatio替代selectedAspectRatio
           seed: seedMode === "random" ? -1 : seedValue,
-          guidanceScale: guidanceScale,
+          guidanceScale,
           style: selectedStyle, // 添加风格参数
         }),
       });
@@ -422,7 +474,12 @@ export default function ComicGenerator() {
     }
   };
 
-  const handleDownloadImage = (imageUrl: string, sceneName: string) => {
+  const handleDownloadImage = (
+    imageUrl: string | undefined,
+    sceneName: string
+  ) => {
+    if (!imageUrl) return;
+
     const a = document.createElement("a");
     a.href = imageUrl;
     a.download = `漫画场景_${sceneName}.jpg`;
@@ -500,10 +557,12 @@ export default function ComicGenerator() {
               <BookOpen className="w-4 h-4" />
               使用指南
             </button>
-            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm text-gray-700 hover:bg-blue-50 transition-colors">
-              <Users className="w-4 h-4" />
-              关于我们
-            </button>
+            <Link href="/about">
+              <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm text-gray-700 hover:bg-blue-50 transition-colors">
+                <Users className="w-4 h-4" />
+                关于我们
+              </button>
+            </Link>
             <button
               onClick={() =>
                 scrollToRef(faqRef as React.RefObject<HTMLDivElement>)
@@ -861,14 +920,12 @@ export default function ComicGenerator() {
                       key={ratio.id}
                       type="button"
                       variant={
-                        selectedAspectRatio === ratio.value
-                          ? "default"
-                          : "outline"
+                        aspectRatio === ratio.value ? "default" : "outline"
                       }
                       size="sm"
-                      onClick={() => setSelectedAspectRatio(ratio.value)}
+                      onClick={() => handleAspectRatioChange(ratio.value)}
                       className={`rounded-full px-4 ${
-                        selectedAspectRatio === ratio.value
+                        aspectRatio === ratio.value
                           ? "bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
                           : "border-blue-200 text-blue-600 hover:bg-blue-50"
                       }`}
@@ -1269,7 +1326,7 @@ export default function ComicGenerator() {
                         <span>
                           图片比例:{" "}
                           <span className="font-medium text-blue-600">
-                            {selectedAspectRatio}
+                            {aspectRatio}
                           </span>
                         </span>
                       </div>
