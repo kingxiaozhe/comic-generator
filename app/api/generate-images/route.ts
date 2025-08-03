@@ -35,32 +35,86 @@ const aspectRatioToSize: Record<
   custom: { width: 1024, height: 1024 }, // 默认为1:1
 };
 
+// 图片风格转换映射
+const styleToPromptModifier: Record<
+  string,
+  { prompt: string; negative?: string }
+> = {
+  anime: {
+    prompt:
+      "anime style, cel shaded, vibrant colors, manga style, Japanese animation",
+    negative: "realistic, photographic, 3d render, low quality",
+  },
+  "comic-book": {
+    prompt:
+      "comic book style, bold outlines, vibrant colors, dynamic composition, superhero style",
+    negative: "realistic, photograph, low contrast",
+  },
+  watercolor: {
+    prompt:
+      "watercolor style, soft edges, flowing colors, artistic, painted, traditional art",
+    negative: "sharp edges, digital art, 3d, photographic",
+  },
+  "pixel-art": {
+    prompt: "pixel art style, 16-bit, retro game aesthetic, pixelated, blocky",
+    negative: "smooth, realistic, high definition, photographic",
+  },
+  "chinese-painting": {
+    prompt:
+      "Chinese ink painting, traditional, elegant brushwork, minimalist, oriental art",
+    negative: "western, colorful, detailed, realistic, modern",
+  },
+  cartoon: {
+    prompt:
+      "cartoon style, simple shapes, bold colors, cute characters, animated",
+    negative: "realistic, detailed, complex, photographic",
+  },
+  cyberpunk: {
+    prompt:
+      "cyberpunk style, neon lights, futuristic, high tech, urban dystopia, sci-fi",
+    negative: "natural, rural, vintage, historical, traditional",
+  },
+  sketch: {
+    prompt:
+      "pencil sketch, hand-drawn, line art, black and white, artistic drawing",
+    negative: "colored, photographic, realistic, 3d render",
+  },
+};
+
 export async function POST(request: NextRequest) {
   try {
     const {
-      comicPanels,
+      panels,
       aspectRatio = "16:9",
       seed = -1,
-      guidance_scale = 2.5,
+      guidanceScale = 2.5,
+      style = "anime",
     } = await request.json();
 
-    if (
-      !comicPanels ||
-      !Array.isArray(comicPanels) ||
-      comicPanels.length === 0
-    ) {
+    if (!panels || !Array.isArray(panels) || panels.length === 0) {
       return NextResponse.json(
         { error: "缺少有效的漫画剧本数据" },
         { status: 400 }
       );
     }
 
+    // 获取风格修饰符
+    const styleModifier =
+      styleToPromptModifier[style] || styleToPromptModifier["anime"];
+
     // 处理每个场景，生成对应的图像
-    const imageGenerationPromises = comicPanels.map(
+    const imageGenerationPromises = panels.map(
       async (panel: ComicPanel, index: number) => {
         try {
           // 从剧本内容中提取关键信息，构建适合图像生成的提示词
-          const prompt = `漫画风格的场景：${panel.content.substring(0, 200)}`;
+          const basePrompt = `漫画风格的场景：${panel.content.substring(
+            0,
+            200
+          )}`;
+
+          // 添加风格修饰符
+          const prompt = `${basePrompt}, ${styleModifier.prompt}`;
+          const negativePrompt = styleModifier.negative || "";
 
           // 获取对应比例的尺寸
           const dimensions = aspectRatioToSize[
@@ -74,19 +128,20 @@ export async function POST(request: NextRequest) {
           console.log(
             `生成场景 ${index + 1}, 使用尺寸: ${dimensions.width}x${
               dimensions.height
-            }, 比例: ${aspectRatio}, 种子: ${panelSeed}, 文本权重: ${guidance_scale}`
+            }, 比例: ${aspectRatio}, 种子: ${panelSeed}, 文本权重: ${guidanceScale}, 风格: ${style}`
           );
 
           // 准备API请求体，注意确保完全按照API文档的要求
           const requestBody = {
             model: "doubao-seededit-3-0-i2i-250628",
             prompt: prompt,
+            negative_prompt: negativePrompt,
             image: BASE_IMAGE_URL,
             response_format: "url",
             width: dimensions.width, // 使用width和height分别指定宽高
             height: dimensions.height,
             seed: panelSeed, // 使用计算得到的种子值
-            guidance_scale: guidance_scale, // 使用传入的文本权重值
+            guidance_scale: guidanceScale, // 使用传入的文本权重值
             watermark: false, // 移除水印
           };
 
@@ -138,14 +193,14 @@ export async function POST(request: NextRequest) {
       } else {
         // 如果某个请求失败，返回原始面板但带有错误信息
         return {
-          ...comicPanels[index],
+          ...panels[index],
           sceneNumber: index + 1,
           error: "图像生成请求失败",
         };
       }
     });
 
-    return NextResponse.json({ comicPanels: generatedPanels });
+    return NextResponse.json({ panels: generatedPanels });
   } catch (error) {
     console.error("图像生成API路由错误:", error);
     return NextResponse.json({ error: "服务器内部错误" }, { status: 500 });

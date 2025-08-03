@@ -159,6 +159,71 @@ const aspectRatios: AspectRatio[] = [
   { id: "custom", label: "自定义", value: "custom" },
 ];
 
+// 在文件顶部添加图片风格相关的类型定义
+
+// 图片风格选项
+type ImageStyle = {
+  id: string;
+  name: string;
+  description: string;
+  icon: string; // 可以用emoji或者图标
+  tag?: string;
+};
+
+const imageStyles: ImageStyle[] = [
+  {
+    id: "anime",
+    name: "日系动漫",
+    description: "清新明亮的日式动漫风格",
+    icon: "🎌",
+    tag: "推荐",
+  },
+  {
+    id: "comic-book",
+    name: "美式漫画",
+    description: "经典美漫风格，鲜明轮廓线",
+    icon: "🦸",
+    tag: "推荐",
+  },
+  {
+    id: "watercolor",
+    name: "水彩画风",
+    description: "柔和的水彩效果，艺术感",
+    icon: "🎨",
+  },
+  {
+    id: "pixel-art",
+    name: "像素艺术",
+    description: "复古游戏风格的像素艺术",
+    icon: "🎮",
+  },
+  {
+    id: "chinese-painting",
+    name: "中国水墨",
+    description: "传统水墨画风格，意境深远",
+    icon: "🖋️",
+  },
+  {
+    id: "cartoon",
+    name: "卡通风格",
+    description: "简洁明快的现代卡通风格",
+    icon: "😊",
+  },
+  {
+    id: "cyberpunk",
+    name: "赛博朋克",
+    description: "未来主义，霓虹灯效果",
+    icon: "🌃",
+    tag: "新品",
+  },
+  {
+    id: "sketch",
+    name: "素描风格",
+    description: "黑白线稿，简洁大方",
+    icon: "✏️",
+  },
+];
+
 export default function ComicGenerator() {
   const [content, setContent] = useState("");
   const [selectedCount, setSelectedCount] = useState(4);
@@ -182,6 +247,7 @@ export default function ComicGenerator() {
   const [activeAccordion, setActiveAccordion] = useState<number | null>(null);
   const faqRef = useRef<HTMLDivElement>(null);
   const homeRef = useRef<HTMLDivElement>(null);
+  const [selectedStyle, setSelectedStyle] = useState<string>("anime"); // 默认选择日系动漫风格
 
   // 处理导航点击，滚动到指定区域
   const scrollToRef = (ref: React.RefObject<HTMLDivElement>) => {
@@ -276,9 +342,6 @@ export default function ComicGenerator() {
     setIsGeneratingImages(true);
     setImageGenerationError(null);
 
-    // 确定要使用的种子值
-    const seed = seedMode === "random" ? -1 : seedValue;
-
     try {
       const response = await fetch("/api/generate-images", {
         method: "POST",
@@ -286,26 +349,27 @@ export default function ComicGenerator() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          comicPanels,
+          panels: comicPanels,
           aspectRatio: selectedAspectRatio,
-          seed: seed,
-          guidance_scale: guidanceScale,
+          seed: seedMode === "random" ? -1 : seedValue,
+          guidanceScale: guidanceScale,
+          style: selectedStyle, // 添加风格参数
         }),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.error || "生成漫画图片失败，请稍后再试");
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      // 更新面板，包含新的图像URL
-      setComicPanels(data.comicPanels);
-    } catch (err) {
-      setImageGenerationError(
-        err instanceof Error ? err.message : "生成漫画图片时发生未知错误"
-      );
-      console.error("生成漫画图片错误:", err);
+      const data = await response.json();
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      setComicPanels(data.panels);
+    } catch (error: any) {
+      console.error("Image generation error:", error);
+      setImageGenerationError(error.message || "图像生成失败");
     } finally {
       setIsGeneratingImages(false);
     }
@@ -401,9 +465,9 @@ export default function ComicGenerator() {
         </div>
       </div>
 
-      {/* 主体内容 - 调整为DeepSeek风格的布局和颜色 */}
+      {/* 主体内容 */}
       <div ref={homeRef} className="max-w-5xl mx-auto px-4 py-12">
-        {/* Hero Section - 更新为DeepSeek风格 */}
+        {/* Hero Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-4">
             <span className="text-gray-800">AI驱动的</span>
@@ -416,7 +480,7 @@ export default function ComicGenerator() {
         </div>
 
         {/* Input Section */}
-        <Card className="mb-8 border-0 shadow-lg shadow-pink-100/50 bg-white/70 backdrop-blur-sm">
+        <Card className="mb-8 border border-blue-100 shadow-md bg-white/90 backdrop-blur-sm">
           <CardContent className="p-6">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
@@ -438,7 +502,7 @@ export default function ComicGenerator() {
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="在这里输入你的故事内容或创意，我们会将其转化为精美的漫画剧本..."
-                className="min-h-[120px] resize-none border-pink-200 focus:border-pink-400 focus:ring-pink-400/20"
+                className="min-h-[120px] resize-none border-blue-200 focus:border-blue-400 focus:ring-blue-400/20"
                 maxLength={maxLength}
               />
 
@@ -447,7 +511,7 @@ export default function ComicGenerator() {
                   variant="outline"
                   size="sm"
                   onClick={fillSample}
-                  className="border-pink-200 text-pink-600 hover:bg-pink-50 bg-transparent"
+                  className="border-blue-200 text-blue-600 hover:bg-blue-50 bg-transparent"
                 >
                   试试示例文章
                 </Button>
@@ -457,20 +521,21 @@ export default function ComicGenerator() {
         </Card>
 
         {/* Configuration Section */}
-        <Card className="mb-8 border-0 shadow-lg shadow-pink-100/50 bg-white/70 backdrop-blur-sm">
+        <Card className="mb-8 border border-blue-100 shadow-md bg-white/90 backdrop-blur-sm">
           <CardContent className="p-6">
             <div className="space-y-6">
               {/* 文本生成模型选择 - 折叠式设计 */}
               <div>
                 {/* 模型选择器标题与折叠按钮 */}
-                <div
-                  className="flex items-center justify-between cursor-pointer rounded-xl p-4 transition-all duration-200 hover:bg-white/80"
+                <button
+                  type="button"
                   onClick={() =>
                     setIsModelSectionExpanded(!isModelSectionExpanded)
                   }
+                  className="w-full flex items-center justify-between cursor-pointer rounded-xl p-4 transition-all duration-200 hover:bg-blue-50/50 text-left"
                 >
                   <div className="flex items-center gap-2">
-                    <div className="rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 p-1.5">
+                    <div className="rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 p-1.5">
                       <Sparkles className="w-4 h-4 text-white" />
                     </div>
                     <div>
@@ -509,7 +574,7 @@ export default function ComicGenerator() {
                       <ChevronDown className="w-5 h-5" />
                     )}
                   </div>
-                </div>
+                </button>
 
                 {/* 展开后的完整模型选择区域 */}
                 {isModelSectionExpanded && (
@@ -519,14 +584,15 @@ export default function ComicGenerator() {
                       {modelCategories.map((category) => (
                         <button
                           key={category.id}
+                          type="button"
                           onClick={(e) => {
                             e.stopPropagation(); // 防止冒泡触发折叠
                             setActiveCategory(category.id);
                           }}
                           className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap transition-all duration-200 ${
                             activeCategory === category.id
-                              ? "bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-sm"
-                              : "bg-white text-gray-700 hover:bg-gray-100"
+                              ? "bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-sm"
+                              : "bg-white text-gray-700 hover:bg-blue-50"
                           }`}
                         >
                           {activeCategory === category.id && (
@@ -650,7 +716,7 @@ export default function ComicGenerator() {
               {/* 场景数量选择 */}
               <div className="space-y-4">
                 <label className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
-                  <ImageIcon className="w-4 h-4 text-pink-500" />
+                  <ImageIcon className="w-4 h-4 text-blue-500" />
                   选择场景数量
                 </label>
 
@@ -658,13 +724,14 @@ export default function ComicGenerator() {
                   {[2, 4, 6, 8].map((count) => (
                     <Button
                       key={count}
+                      type="button"
                       variant={selectedCount === count ? "default" : "outline"}
                       size="sm"
                       onClick={() => setSelectedCount(count)}
                       className={`rounded-full px-6 ${
                         selectedCount === count
-                          ? "bg-gradient-to-r from-pink-500 to-orange-500 hover:from-pink-600 hover:to-orange-600"
-                          : "border-pink-200 text-pink-600 hover:bg-pink-50"
+                          ? "bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
+                          : "border-blue-200 text-blue-600 hover:bg-blue-50"
                       }`}
                     >
                       {count}个场景
@@ -684,6 +751,7 @@ export default function ComicGenerator() {
                   {aspectRatios.map((ratio) => (
                     <Button
                       key={ratio.id}
+                      type="button"
                       variant={
                         selectedAspectRatio === ratio.value
                           ? "default"
@@ -703,13 +771,81 @@ export default function ComicGenerator() {
                 </div>
               </div>
 
+              {/* 图片风格选择 */}
+              <div className="space-y-4">
+                <label className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-purple-500" />
+                  图片风格
+                </label>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {imageStyles.map((style) => (
+                    <div
+                      key={style.id}
+                      onClick={() => setSelectedStyle(style.id)}
+                      className={`relative p-4 rounded-xl cursor-pointer transition-all duration-200 border ${
+                        selectedStyle === style.id
+                          ? "border-purple-400 bg-gradient-to-br from-purple-50 to-indigo-50 shadow-sm"
+                          : "border-gray-200 hover:border-purple-200 bg-white hover:bg-purple-50/30"
+                      }`}
+                    >
+                      {style.tag && (
+                        <div className="absolute -top-2 -right-2">
+                          <Badge
+                            className={`text-xs ${
+                              style.tag === "推荐"
+                                ? "bg-green-100 text-green-800"
+                                : style.tag === "新品"
+                                ? "bg-orange-100 text-orange-800"
+                                : "bg-blue-100 text-blue-800"
+                            }`}
+                          >
+                            {style.tag}
+                          </Badge>
+                        </div>
+                      )}
+
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="text-2xl">{style.icon}</span>
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`font-medium text-sm ${
+                              selectedStyle === style.id
+                                ? "text-purple-700"
+                                : "text-gray-700"
+                            }`}
+                          >
+                            {style.name}
+                          </span>
+                          {selectedStyle === style.id && (
+                            <Check className="w-4 h-4 text-purple-500" />
+                          )}
+                        </div>
+                      </div>
+
+                      <p className="text-xs text-gray-500 leading-relaxed">
+                        {style.description}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="text-xs text-gray-500 text-center">
+                  选择的风格：
+                  <span className="font-medium text-purple-600">
+                    {imageStyles.find((s) => s.id === selectedStyle)?.name}
+                  </span>
+                </div>
+              </div>
+
               {/* 高级设置部分 */}
               <div className="mt-2">
                 <button
+                  type="button"
                   className={`w-full flex items-center justify-between p-4 text-left rounded-xl transition-all duration-200 ${
                     showAdvancedSettings
-                      ? "bg-gradient-to-r from-purple-50 to-indigo-50 shadow-sm"
-                      : "bg-white/50 hover:bg-white/80"
+                      ? "bg-gradient-to-r from-blue-50 to-indigo-50 shadow-sm"
+                      : "bg-white/50 hover:bg-blue-50/80"
                   }`}
                   onClick={() => setShowAdvancedSettings(!showAdvancedSettings)}
                 >
@@ -717,7 +853,7 @@ export default function ComicGenerator() {
                     <div
                       className={`rounded-full p-1.5 ${
                         showAdvancedSettings
-                          ? "bg-gradient-to-r from-purple-500 to-indigo-500"
+                          ? "bg-gradient-to-r from-blue-500 to-indigo-500"
                           : "bg-gray-100"
                       }`}
                     >
@@ -1051,6 +1187,18 @@ export default function ComicGenerator() {
                           </div>
                         </>
                       )}
+                      <div className="flex items-center gap-1">
+                        <Sparkles className="w-3.5 h-3.5 text-purple-500" />
+                        <span>
+                          风格:{" "}
+                          <span className="font-medium text-purple-600">
+                            {
+                              imageStyles.find((s) => s.id === selectedStyle)
+                                ?.name
+                            }
+                          </span>
+                        </span>
+                      </div>
                     </div>
                   </div>
                   <Button
