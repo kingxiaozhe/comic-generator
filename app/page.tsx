@@ -31,6 +31,9 @@ import {
   HelpCircle,
   PlusCircle,
   MinusCircle,
+  Tag,
+  BookOpen,
+  Users,
 } from "lucide-react";
 import { ComicPanel } from "@/lib/types";
 
@@ -348,12 +351,12 @@ export default function ComicGenerator() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-orange-50">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-indigo-50">
       {/* 导航栏 */}
-      <div className="bg-white/80 backdrop-blur-md border-b border-pink-100 sticky top-0 z-20">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div className="bg-white/90 backdrop-blur-sm border-b border-blue-100 sticky top-0 z-20">
+        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-r from-pink-500 to-orange-500 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-md flex items-center justify-center">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <span className="font-bold text-gray-800">漫画生成器</span>
@@ -365,35 +368,50 @@ export default function ComicGenerator() {
               onClick={() =>
                 scrollToRef(homeRef as React.RefObject<HTMLDivElement>)
               }
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm text-gray-700 hover:bg-pink-50 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm text-gray-700 hover:bg-blue-50 transition-colors"
             >
               <Home className="w-4 h-4" />
               首页
+            </button>
+            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm text-gray-700 hover:bg-blue-50 transition-colors">
+              <Tag className="w-4 h-4" />
+              定价
+            </button>
+            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm text-gray-700 hover:bg-blue-50 transition-colors">
+              <BookOpen className="w-4 h-4" />
+              使用指南
+            </button>
+            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm text-gray-700 hover:bg-blue-50 transition-colors">
+              <Users className="w-4 h-4" />
+              关于我们
             </button>
             <button
               onClick={() =>
                 scrollToRef(faqRef as React.RefObject<HTMLDivElement>)
               }
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm text-gray-700 hover:bg-pink-50 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm text-gray-700 hover:bg-blue-50 transition-colors"
             >
               <HelpCircle className="w-4 h-4" />
               常见问题
             </button>
-            <Badge variant="secondary" className="bg-pink-100 text-pink-700">
+            <Badge variant="secondary" className="bg-blue-100 text-blue-700">
               Beta
             </Badge>
           </div>
         </div>
       </div>
 
-      <div ref={homeRef} className="max-w-4xl mx-auto px-4 py-8">
-        {/* Hero Section */}
+      {/* 主体内容 - 调整为DeepSeek风格的布局和颜色 */}
+      <div ref={homeRef} className="max-w-5xl mx-auto px-4 py-12">
+        {/* Hero Section - 更新为DeepSeek风格 */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-600 to-orange-600 bg-clip-text text-transparent mb-4">
-            文章转漫画生成器
+          <h1 className="text-4xl font-bold mb-4">
+            <span className="text-gray-800">AI驱动的</span>
+            <span className="text-blue-600">智能漫画</span>
+            <span className="text-gray-800">创作引擎</span>
           </h1>
-          <p className="text-gray-600 text-lg mb-8">
-            将你的文字变成精彩的漫画故事 ✨
+          <p className="text-gray-600 text-xl max-w-2xl mx-auto mb-6">
+            突破性AI技术将你的文字转化为专业级漫画，释放无限创意潜能
           </p>
         </div>
 
@@ -461,8 +479,8 @@ export default function ComicGenerator() {
                       </label>
                       {selectedModelInfo && (
                         <div className="text-sm text-gray-500 flex items-center gap-1 mt-0.5">
-                          <span>当前：</span>
-                          <span className="font-medium text-purple-600">
+                          <span>已选择:</span>
+                          <span className="font-medium text-blue-600">
                             {selectedModelInfo.name}
                           </span>
                           {selectedModelInfo.tag && (
@@ -839,24 +857,32 @@ export default function ComicGenerator() {
         </Card>
 
         {/* Generate Button */}
-        <div className="text-center mb-8">
+        <div className="flex justify-center mt-8 mb-10">
           <Button
             onClick={handleGenerate}
             disabled={!content.trim() || isGenerating}
             size="lg"
-            className="px-12 py-3 text-lg font-medium rounded-full bg-gradient-to-r from-pink-500 to-orange-500 hover:from-pink-600 hover:to-orange-600 disabled:from-gray-300 disabled:to-gray-300 shadow-lg shadow-pink-200"
+            className="px-8 py-6 text-lg font-medium rounded-md bg-green-500 hover:bg-green-600 disabled:bg-gray-300 shadow-md flex items-center gap-2"
           >
             {isGenerating ? (
               <>
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2" />
-                生成中...
+                AI智能生成中...
               </>
             ) : (
               <>
                 <Wand2 className="w-5 h-5 mr-2" />
-                生成漫画剧本
+                一键生成专业剧本
               </>
             )}
+          </Button>
+
+          <Button
+            variant="outline"
+            size="lg"
+            className="ml-4 px-8 py-6 text-lg font-medium rounded-md border-gray-200 text-gray-600 hover:bg-gray-50"
+          >
+            探索高级功能
           </Button>
         </div>
 
@@ -883,7 +909,7 @@ export default function ComicGenerator() {
 
         {/* Loading State */}
         {isGenerating && (
-          <Card className="mb-8 border-0 shadow-lg shadow-pink-100/50 bg-white/70 backdrop-blur-sm">
+          <Card className="mb-8 border-0 shadow-md bg-white/90 backdrop-blur-sm rounded-xl overflow-hidden">
             <CardContent className="p-8 text-center">
               <div className="space-y-4">
                 <div className="animate-pulse">
@@ -902,12 +928,13 @@ export default function ComicGenerator() {
         {comicPanels.length > 0 && !isGenerating && (
           <Card className="border-0 shadow-lg shadow-pink-100/50 bg-white/70 backdrop-blur-sm">
             <CardContent className="p-6">
-              <div className="mb-6">
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                  生成结果
-                </h3>
-                <p className="text-gray-600 text-sm">
-                  以下是根据您的内容创作的漫画剧本
+              {/* 结果区域优化标题 */}
+              <div className="mt-12 mb-6 text-center">
+                <h2 className="text-3xl font-bold text-gray-800 mb-2">
+                  AI智能创作成果
+                </h2>
+                <p className="text-gray-600">
+                  以下是基于您的创意生成的专业级漫画剧本方案
                 </p>
               </div>
 
@@ -1035,12 +1062,12 @@ export default function ComicGenerator() {
                     {isGeneratingImages ? (
                       <>
                         <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2" />
-                        生成中...
+                        AI渲染图像中...
                       </>
                     ) : (
                       <>
                         <ImageIcon className="w-5 h-5 mr-2" />
-                        根据剧本生成漫画
+                        一键渲染高清漫画
                       </>
                     )}
                   </Button>
@@ -1095,21 +1122,23 @@ export default function ComicGenerator() {
       </div>
 
       {/* FAQ Section */}
-      <div ref={faqRef} className="mt-16 pt-8 border-t border-pink-100">
+      <div ref={faqRef} className="mt-16 pt-8 border-t border-blue-100">
+        {/* FAQ标题优化 */}
         <div className="text-center mb-10">
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-pink-600 to-orange-600 bg-clip-text text-transparent mb-4">
-            技术问答
+          <h2 className="text-3xl font-bold mb-4">
+            <span className="text-gray-800">专业</span>
+            <span className="text-blue-600">技术解析</span>
           </h2>
           <p className="text-gray-600">
-            深入了解漫画生成器的技术原理与高级功能
+            深度了解我们的人工智能驱动引擎与前沿创作技术
           </p>
         </div>
 
-        <div className="space-y-4 mb-8">
+        <div className="space-y-4 mb-8 max-w-3xl mx-auto">
           {faqs.map((faq, index) => (
             <div
               key={index}
-              className="border border-pink-100 rounded-xl overflow-hidden bg-white/70 backdrop-blur-sm shadow-sm"
+              className="border border-blue-100 rounded-xl overflow-hidden bg-white/70 backdrop-blur-sm shadow-sm"
             >
               <button
                 className="w-full p-4 text-left flex justify-between items-center"
@@ -1118,7 +1147,7 @@ export default function ComicGenerator() {
                 <span className="font-medium text-gray-800">
                   {faq.question}
                 </span>
-                <span className="text-pink-500">
+                <span className="text-blue-500">
                   {activeAccordion === index ? (
                     <MinusCircle className="w-5 h-5" />
                   ) : (
@@ -1128,13 +1157,13 @@ export default function ComicGenerator() {
               </button>
 
               {activeAccordion === index && (
-                <div className="p-4 pt-0 border-t border-pink-50 bg-gradient-to-br from-pink-50/30 to-orange-50/30">
+                <div className="p-4 pt-0 border-t border-blue-50 bg-gradient-to-br from-blue-50/30 to-indigo-50/30">
                   <p className="text-gray-600 whitespace-pre-line text-sm leading-relaxed">
                     {faq.answer}
                   </p>
                   {index === 6 && (
-                    <div className="mt-3 text-xs text-indigo-600">
-                      <a href="#" className="underline hover:text-indigo-800">
+                    <div className="mt-3 text-xs text-blue-600">
+                      <a href="#" className="underline hover:text-blue-800">
                         查看完整API文档 →
                       </a>
                     </div>
@@ -1147,18 +1176,20 @@ export default function ComicGenerator() {
       </div>
 
       {/* Footer */}
-      <div className="text-center py-8 text-gray-500 text-sm">
-        <p>让每个人都能轻松将文字转化为视觉故事 💫</p>
-        <div className="flex justify-center gap-4 mt-2">
-          <button className="hover:text-pink-500 transition-colors">
-            隐私政策
-          </button>
-          <button className="hover:text-pink-500 transition-colors">
-            使用条款
-          </button>
-          <button className="hover:text-pink-500 transition-colors">
-            联系我们
-          </button>
+      <div className="bg-gradient-to-r from-blue-900 to-indigo-900 text-white py-8">
+        <div className="max-w-5xl mx-auto px-4">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="flex items-center gap-2 mb-4 md:mb-0">
+              <div className="w-8 h-8 bg-white/20 rounded-md flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-white" />
+              </div>
+              <span className="font-bold text-xl">漫画生成器</span>
+            </div>
+
+            <p className="text-indigo-200 text-sm">
+              © {new Date().getFullYear()} 漫画生成器. 保留所有权利.
+            </p>
+          </div>
         </div>
       </div>
     </div>
