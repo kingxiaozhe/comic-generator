@@ -1,31 +1,23 @@
 import type { Metadata } from "next";
-import { GeistSans } from "geist/font/sans";
-import { GeistMono } from "geist/font/mono";
+import { Inter } from "next/font/google";
 import "./globals.css";
 
+const inter = Inter({ subsets: ["latin"] });
+
 export const metadata: Metadata = {
-  title: "漫画",
-  description: "做你最喜欢的漫画",
-  generator: "kingonsky",
+  title: "智绘漫AI - AI驱动的智能漫画创作引擎",
+  description: "智绘漫AI，用AI技术重新定义漫画创作，让创意无限可能",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en">
-      <head>
-        <style>{`
-html {
-  font-family: ${GeistSans.style.fontFamily};
-  --font-sans: ${GeistSans.variable};
-  --font-mono: ${GeistMono.variable};
-}
-        `}</style>
-      </head>
-      <body>{children}</body>
+    <html suppressHydrationWarning>
+      <head />
+      <body className={inter.className}>{children}</body>
     </html>
   );
 }

@@ -1,4 +1,4 @@
-import { NextIntlClientProvider } from "next-intl";
+import { NextIntlClientProvider, useMessages } from "next-intl";
 import { notFound } from "next/navigation";
 import { ReactNode } from "react";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -16,8 +16,10 @@ interface RootLayoutProps {
 
 export default async function RootLayout({
   children,
-  params: { locale },
+  params,
 }: RootLayoutProps) {
+  const locale = params.locale;
+
   let messages;
   try {
     messages = (await import(`../../messages/${locale}.json`)).default;
