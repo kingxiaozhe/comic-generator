@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -34,8 +34,11 @@ import {
   Tag,
   BookOpen,
   Users,
+  Key, // 添加Key图标
 } from "lucide-react";
 import { ComicPanel } from "@/lib/types";
+import { ActivationModal } from "@/components/ActivationModal";
+import { ActivationService } from "@/lib/activation";
 
 // 图片比例选项
 type AspectRatio = {
@@ -249,6 +252,27 @@ export default function ComicGenerator() {
   const homeRef = useRef<HTMLDivElement>(null);
   const [selectedStyle, setSelectedStyle] = useState<string>("anime"); // 默认选择日系动漫风格
 
+  // 添加激活码相关状态
+  const [showActivationModal, setShowActivationModal] = useState(false);
+  const [activationInfo, setActivationInfo] = useState<{
+    code: string;
+    remainingUses: number;
+  } | null>(null);
+
+  // 在useEffect中检查激活码状态
+  useEffect(() => {
+    const checkActivation = () => {
+      if (ActivationService.hasActivatedCode()) {
+        const info = ActivationService.getCurrentCodeInfo();
+        if (info) {
+          setActivationInfo(info);
+        }
+      }
+    };
+
+    checkActivation();
+  }, []);
+
   // 处理导航点击，滚动到指定区域
   const scrollToRef = (ref: React.RefObject<HTMLDivElement>) => {
     if (ref && ref.current) {
@@ -302,8 +326,23 @@ export default function ComicGenerator() {
 
   const sampleArticle = `春天来了，小明走在回家的路上。突然，他发现路边有一只受伤的小猫。小明毫不犹豫地将小猫抱起，送到了附近的宠物医院。医生说小猫只是轻微擦伤，很快就能康复。从那天起，小明每天都会去医院看望小猫，直到它完全康复。`;
 
+  // 修改handleGenerate函数，添加激活码检查
   const handleGenerate = async () => {
-    if (!content.trim()) return;
+    // 检查激活码
+    if (!ActivationService.hasActivatedCode()) {
+      setShowActivationModal(true);
+      return;
+    }
+
+    if (ActivationService.getRemainingUses() <= 0) {
+      setError("激活码使用次数已用完，请使用新的激活码");
+      return;
+    }
+
+    if (!content.trim()) {
+      setError("请输入文章内容");
+      return;
+    }
 
     setIsGenerating(true);
     setError(null);
@@ -328,6 +367,14 @@ export default function ComicGenerator() {
       }
 
       setComicPanels(data.comicPanels);
+
+      // 使用一次激活码
+      if (ActivationService.useOnce()) {
+        const updatedInfo = ActivationService.getCurrentCodeInfo();
+        if (updatedInfo) {
+          setActivationInfo(updatedInfo);
+        }
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "生成漫画时发生未知错误");
       console.error("生成漫画错误:", err);
@@ -414,6 +461,14 @@ export default function ComicGenerator() {
     (model) => model.id === selectedModel
   );
 
+  // 激活成功回调
+  const handleActivationSuccess = () => {
+    const info = ActivationService.getCurrentCodeInfo();
+    if (info) {
+      setActivationInfo(info);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-indigo-50">
       {/* 导航栏 */}
@@ -478,6 +533,59 @@ export default function ComicGenerator() {
             突破性AI技术将你的文字转化为专业级漫画，释放无限创意潜能
           </p>
         </div>
+
+        {/* 激活码状态显示 */}
+        <Card className="mb-8 border border-blue-100 shadow-md bg-white/90 backdrop-blur-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Key className="w-5 h-5 text-blue-500" />
+                <div>
+                  {activationInfo ? (
+                    <>
+                      <p className="text-sm font-medium text-gray-800">
+                        激活码：{activationInfo.code}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        剩余使用次数：{activationInfo.remainingUses} 次
+                      </p>
+                    </>
+                  ) : (
+                    <p className="text-sm text-gray-600">
+                      请输入激活码以开始使用
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {activationInfo && (
+                  <Badge
+                    variant="secondary"
+                    className={`${
+                      activationInfo.remainingUses > 5
+                        ? "bg-green-100 text-green-800"
+                        : activationInfo.remainingUses > 0
+                        ? "bg-yellow-100 text-yellow-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
+                  >
+                    {activationInfo.remainingUses} 次
+                  </Badge>
+                )}
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowActivationModal(true)}
+                  className="border-blue-200 text-blue-600 hover:bg-blue-50"
+                >
+                  {activationInfo ? "更换激活码" : "输入激活码"}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Input Section */}
         <Card className="mb-8 border border-blue-100 shadow-md bg-white/90 backdrop-blur-sm">
@@ -1340,6 +1448,13 @@ export default function ComicGenerator() {
           </div>
         </div>
       </div>
+
+      {/* 激活码模态框 */}
+      <ActivationModal
+        isOpen={showActivationModal}
+        onClose={() => setShowActivationModal(false)}
+        onSuccess={handleActivationSuccess}
+      />
     </div>
   );
 }
