@@ -1,0 +1,88 @@
+{
+    "nav": {
+        "home": "Home",
+        "pricing": "Pricing",
+        "guide": "Guide",
+        "about": "About",
+        "faq": "FAQ"
+    },
+    "hero": {
+        "title": {
+            "prefix": "AI-Powered",
+            "highlight": "Comic Creation",
+            "suffix": "Engine"
+        },
+        "description": "ZhiHuiMan AI redefines comic creation with AI technology, unleashing unlimited creative potential",
+        "button": {
+            "primary": "Generate Professional Script",
+            "secondary": "Explore Advanced Features"
+        }
+    },
+    "input": {
+        "label": "Enter your story or creative idea",
+        "placeholder": "Enter your story or creative idea here, and we'll transform it into a beautiful comic script...",
+        "remaining": "{count} characters remaining",
+        "sample": "Try Sample Story"
+    },
+    "settings": {
+        "model": {
+            "title": "Text Generation Model",
+            "selected": "Selected"
+        },
+        "scenes": {
+            "title": "Select Number of Scenes",
+            "count": "{count} Scenes"
+        },
+        "ratio": {
+            "title": "Image Ratio"
+        },
+        "style": {
+            "title": "Image Style",
+            "selected": "Selected Style"
+        },
+        "advanced": {
+            "title": "Advanced Settings",
+            "guidance": {
+                "title": "Text Weight",
+                "description": "Controls how closely the generated image follows the text description. Higher values result in more accurate representations, lower values allow more creativity",
+                "creative": "More Creative",
+                "accurate": "More Accurate"
+            },
+            "seed": {
+                "title": "Seed Number",
+                "description": "Base value for physical expansion initial state. Same seed with same parameters will likely generate similar images",
+                "random": "Random",
+                "fixed": "Fixed"
+            }
+        }
+    },
+    "generation": {
+        "loading": "AI Generation in Progress...",
+        "estimate": "Estimated time: 30 seconds",
+        "success": "Generation Successful",
+        "error": "Generation failed, please try again later",
+        "result": {
+            "title": "AI Creation Results",
+            "description": "Here's your professional comic script based on your creative input",
+            "scene": "Scene {number}",
+            "download": "Download Image",
+            "render": "Render HD Comic",
+            "rendering": "AI Rendering Images..."
+        }
+    },
+    "activation": {
+        "title": "Activation Code",
+        "placeholder": "Enter activation code",
+        "button": {
+            "activate": "Activate",
+            "change": "Change Code"
+        },
+        "status": {
+            "remaining": "{count} uses remaining",
+            "empty": "Please enter activation code to start"
+        }
+    },
+    "footer": {
+        "copyright": "© {year} ZhiHuiMan AI. All rights reserved."
+    }
+}

@@ -1,0 +1,88 @@
+{
+    "nav": {
+        "home": "首页",
+        "pricing": "定价",
+        "guide": "使用指南",
+        "about": "关于我们",
+        "faq": "常见问题"
+    },
+    "hero": {
+        "title": {
+            "prefix": "AI驱动的",
+            "highlight": "智能漫画",
+            "suffix": "创作引擎"
+        },
+        "description": "智绘漫AI，用AI技术重新定义漫画创作，让创意无限可能",
+        "button": {
+            "primary": "一键生成专业剧本",
+            "secondary": "探索高级功能"
+        }
+    },
+    "input": {
+        "label": "输入你的文章内容或创意",
+        "placeholder": "在这里输入你的故事内容或创意，我们会将其转化为精美的漫画剧本...",
+        "remaining": "还可以输入 {count} 字",
+        "sample": "试试示例文章"
+    },
+    "settings": {
+        "model": {
+            "title": "文本生成模型",
+            "selected": "已选择"
+        },
+        "scenes": {
+            "title": "选择场景数量",
+            "count": "{count}个场景"
+        },
+        "ratio": {
+            "title": "图片比例"
+        },
+        "style": {
+            "title": "图片风格",
+            "selected": "选择的风格"
+        },
+        "advanced": {
+            "title": "高级设置",
+            "guidance": {
+                "title": "文本权重",
+                "description": "显示文字（创意描述）对结果图像的影响程度，数值越大图像越接近文字描述，数值越小图像可能更具创造性",
+                "creative": "更具创造性",
+                "accurate": "更贴近描述"
+            },
+            "seed": {
+                "title": "种子数",
+                "description": "用于物理定扩初始状态的基值，若随机种子相同并且其他参数相同，则生成图片大概率一致",
+                "random": "随机",
+                "fixed": "固定"
+            }
+        }
+    },
+    "generation": {
+        "loading": "AI智能生成中...",
+        "estimate": "预计需要30秒",
+        "success": "生成成功",
+        "error": "生成失败，请稍后再试",
+        "result": {
+            "title": "AI智能创作成果",
+            "description": "以下是基于您的创意生成的专业级漫画剧本方案",
+            "scene": "场景 {number}",
+            "download": "下载图片",
+            "render": "一键渲染高清漫画",
+            "rendering": "AI渲染图像中..."
+        }
+    },
+    "activation": {
+        "title": "激活码",
+        "placeholder": "请输入激活码",
+        "button": {
+            "activate": "激活",
+            "change": "更换激活码"
+        },
+        "status": {
+            "remaining": "剩余使用次数：{count} 次",
+            "empty": "请输入激活码以开始使用"
+        }
+    },
+    "footer": {
+        "copyright": "© {year} 智绘漫AI. 保留所有权利."
+    }
+}
