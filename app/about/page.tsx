@@ -30,7 +30,7 @@ export default function AboutPage() {
               <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-md flex items-center justify-center">
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
-              <span className="font-bold text-gray-800">漫画生成器</span>
+              <span className="font-bold text-gray-800">智绘漫AI</span>
             </div>
           </Link>
 
@@ -53,7 +53,7 @@ export default function AboutPage() {
             <span className="text-gray-800">重新定义漫画创作</span>
           </h1>
           <p className="text-gray-600 text-xl max-w-2xl mx-auto">
-            我们致力于将尖端人工智能技术与传统漫画艺术完美融合，为创作者提供无限可能
+            智绘漫AI致力于将尖端人工智能技术与传统漫画艺术完美融合，为创作者提供无限可能
           </p>
         </div>
 
@@ -186,7 +186,7 @@ export default function AboutPage() {
         <div className="mb-16">
           <h2 className="text-3xl font-bold text-center mb-8">
             <span className="text-gray-800">专业的</span>
-            <span className="text-blue-600">技术团队</span>
+            <span className="text-blue-600">技术大牛</span>
           </h2>
 
           <Card className="border-blue-100 bg-white/80 backdrop-blur-sm">
@@ -196,7 +196,7 @@ export default function AboutPage() {
                   <Users className="w-8 h-8 text-white" />
                 </div>
                 <p className="text-gray-600 mb-6">
-                  我们的团队由AI研究员、软件工程师和漫画艺术家组成，拥有丰富的行业经验和专业知识。团队成员来自知名科技公司和研究机构，致力于将最新的AI技术应用于创意领域。
+                  我们的团队由王小者大牛领头，协数十位业界AI研究员、软件工程师和漫画艺术家组成，拥有丰富的行业经验和专业知识。团队成员来自知名科技公司和研究机构，致力于将最新的AI技术应用于创意领域。
                 </p>
                 <div className="flex flex-wrap justify-center gap-2">
                   <Badge className="bg-blue-100 text-blue-700">AI研究</Badge>
@@ -244,11 +244,11 @@ export default function AboutPage() {
               <div className="w-8 h-8 bg-white/20 rounded-md flex items-center justify-center">
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
-              <span className="font-bold text-xl">漫画生成器</span>
+              <span className="font-bold text-xl">智绘漫AI</span>
             </div>
 
             <p className="text-indigo-200 text-sm">
-              © {new Date().getFullYear()} 漫画生成器. 保留所有权利.
+              © {new Date().getFullYear()} 智绘漫AI. 保留所有权利.
             </p>
           </div>
         </div>

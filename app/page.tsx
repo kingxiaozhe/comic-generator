@@ -331,42 +331,271 @@ export default function ComicGenerator() {
     }
   };
 
+  // FAQ数据类型定义
+  interface FAQItem {
+    question: string;
+    answer: {
+      title: string;
+      content: string;
+      items: (
+        | string
+        | {
+            subtitle: string;
+            details: string[];
+          }
+      )[];
+    }[];
+  }
+
   // FAQ数据
-  const faqs = [
+  const faqs: FAQItem[] = [
     {
-      question: "漫画生成器的技术原理是什么？",
-      answer:
-        "我们的漫画生成器采用双阶段AI生成架构。第一阶段使用大型语言模型（如QwQ-32B, GPT-4等）进行文本到漫画剧本的转换，通过精心设计的提示工程（Prompt Engineering）技术，将输入文本结构化为包含场景描述、人物动作和对白的剧本格式。第二阶段则采用扩散模型（Diffusion Model）技术，通过Volces ARK的doubao-seededit-3-0-i2i-250628模型将剧本转换为视觉呈现。系统采用无缝集成式API调用流程，确保两个阶段之间的数据传递高效准确。",
+      question: "漫画生成的技术原理是什么？",
+      answer: [
+        {
+          title: "双阶段AI生成架构",
+          content: "我们采用创新的双阶段生成架构，确保每个环节的输出质量：",
+          items: [
+            {
+              subtitle: "第一阶段：文本理解与剧本生成",
+              details: [
+                "使用大型语言模型（QwQ-32B, GPT-4等）",
+                "通过精心设计的Prompt Engineering",
+                "将输入文本结构化为专业剧本格式",
+                "包含场景描述、人物动作和对白",
+              ],
+            },
+            {
+              subtitle: "第二阶段：视觉内容生成",
+              details: [
+                "采用Volces ARK的doubao-seededit-3-0-i2i-250628扩散模型",
+                "将剧本转换为高质量视觉呈现",
+                "确保画面风格统一",
+                "支持多种艺术风格",
+              ],
+            },
+          ],
+        },
+        {
+          title: "无缝集成式API调用",
+          content: "系统采用先进的API调用流程，确保：",
+          items: [
+            "两个阶段之间的数据传递高效准确",
+            "支持批量处理多个场景",
+            "实时状态反馈",
+            "错误自动重试机制",
+          ],
+        },
+      ],
     },
     {
       question: "不同文本生成模型之间有什么具体区别？",
-      answer:
-        "我们提供的文本生成模型在推理速度、创意风格和专业领域上有显著差异：1）QwQ-32B是我们的旗舰模型，参数量达32B，擅长构建复杂叙事和细致刻画，但推理速度较慢；2）DeepSeek-7B参数量更小，推理速度是QwQ-32B的约3倍，但在细节描述上稍弱；3）GPT-3.5提供平衡的性能，特别适合对话场景；4）专业模型如StoryXL和ComicPro分别针对故事结构和漫画表现力进行了微调优化，在特定领域表现出色。选择模型时，建议根据您的具体需求（创作速度vs.质量）进行权衡。",
+      answer: [
+        {
+          title: "QwQ-32B（旗舰模型）",
+          content: "我们的主力模型，具有以下特点：",
+          items: [
+            "32B参数规模，理解能力强",
+            "擅长复杂叙事和细节描写",
+            "支持上下文关联理解",
+            "生成质量最高，但推理速度较慢",
+          ],
+        },
+        {
+          title: "DeepSeek-7B（平衡型）",
+          content: "性能与速度的最佳平衡：",
+          items: [
+            "7B参数规模，推理速度是QwQ-32B的约3倍",
+            "适合快速原型生成",
+            "质量适中，性价比高",
+            "特别适合批量生成场景",
+          ],
+        },
+        {
+          title: "专业领域模型",
+          content: "针对特定场景优化：",
+          items: [
+            "StoryXL：专注故事结构和情节发展",
+            "ComicPro：优化漫画表现力和分镜设计",
+            "支持风格迁移和场景重构",
+            "可根据具体需求选择",
+          ],
+        },
+      ],
     },
     {
       question: "文本权重和种子数参数如何影响图像生成效果？",
-      answer:
-        "文本权重（guidance_scale）是控制生成图像与文本描述匹配程度的关键参数。技术上，它决定了扩散模型在采样过程中对条件（文本）的依赖程度。数值范围1.0-10.0，其中：1.0-2.0时模型更注重创造性但可能偏离文本；2.5-5.0是平衡区间；5.0-10.0时严格遵循文本但可能牺牲图像质量。种子数（seed）则是决定初始噪声模式的整数，范围为-1至2147483647，固定种子可在保持其他参数不变的情况下生成相似图像，这对于风格一致性和迭代修改特别有用。随机种子(-1)则每次生成完全不同的结果，适合探索多样创意。",
+      answer: [
+        {
+          title: "文本权重（guidance_scale）",
+          content:
+            "控制生成图像与文本描述匹配程度的关键参数。技术上，它决定了扩散模型在采样过程中对条件（文本）的依赖程度。数值范围1.0-10.0，其中：1.0-2.0时模型更注重创造性但可能偏离文本；2.5-5.0是平衡区间；5.0-10.0时严格遵循文本但可能牺牲图像质量。种子数（seed）则是决定初始噪声模式的整数，范围为-1至2147483647，固定种子可在保持其他参数不变的情况下生成相似图像，这对于风格一致性和迭代修改特别有用。随机种子(-1)则每次生成完全不同的结果，适合探索多样创意。",
+          items: [
+            {
+              subtitle: "数值范围：1.0-10.0",
+              details: [
+                "1.0-2.0：更注重创造性，可能偏离文本描述",
+                "2.5-5.0：推荐区间，平衡创意与准确性",
+                "5.0-10.0：严格遵循文本，可能影响画面自然度",
+              ],
+            },
+          ],
+        },
+        {
+          title: "种子数（seed）",
+          content: "决定初始噪声模式：",
+          items: [
+            {
+              subtitle: "取值范围：-1至2147483647",
+              details: [
+                "固定种子：相同参数下生成相似图像",
+                "随机种子（-1）：每次生成全新结果",
+                "适用于风格探索和迭代优化",
+              ],
+            },
+          ],
+        },
+      ],
     },
     {
       question: "如何解决生成图像中的常见问题（手部变形、文字呈现等）？",
-      answer:
-        '生成图像中的常见技术问题及解决方案：1）手部变形问题 - 在剧本描述中明确指出"手部自然放置"或"手势清晰"，并适当提高文本权重至4.0-5.0；2）文字呈现 - 当前模型对于生成可读文字的能力有限，建议在剧本中将对话框描述为"包含文字的对话框"而非具体文字内容，后期可通过图像编辑添加；3）角色一致性 - 使用固定种子值并在每个场景描述中保持相同的角色描述关键词；4）背景细节不足 - 增加场景描述的具体细节，如"阳光透过窗帘的详细环境；5）风格不一致 - 在每个场景描述前统一添加风格标签如"漫画风格，线条清晰"。持续实验不同参数组合可以找到最适合您具体需求的配置。',
+      answer: [
+        {
+          title: "手部细节优化",
+          content: "针对手部变形问题的解决方案：",
+          items: [
+            '在描述中明确指出"手部自然放置"',
+            "适当提高文本权重至4.0-5.0",
+            "使用手部姿势关键词库",
+            "必要时使用局部重绘功能",
+          ],
+        },
+        {
+          title: "文字呈现增强",
+          content: "改善文字清晰度的技巧：",
+          items: [
+            '将对话框描述为"包含文字的对话框"',
+            "避免在图像中直接生成复杂文字",
+            "使用后期文字叠加功能",
+            "保持文字区域留白",
+          ],
+        },
+        {
+          title: "角色一致性",
+          content: "保持角色特征稳定的方法：",
+          items: [
+            "使用固定的种子值",
+            "维护角色特征关键词列表",
+            "在每个场景中复用角色描述",
+            "使用角色模板功能",
+          ],
+        },
+      ],
     },
     {
       question: "如何优化输入内容以获得最佳漫画生成效果？",
-      answer:
-        '输入优化技术指南：1）结构化叙事 - 使用清晰的起承转合结构，每个转折点应对应一个场景；2）场景密度控制 - 理想情况下每250-300字安排一个场景，确保内容既不过于密集也不过于稀疏；3）描述性语言 - 使用具象而非抽象描述，例如用"眉毛紧锁，双手颤抖"代替"感到紧张；4）角色一致性标记 - 为主要角色设置独特标识词并在全文保持一致；5）情感关键词强化 - 在情感转折处使用明确的情感关键词；6）环境元素前置 - 在描述角色行动前先建立环境背景；7）节奏变化指示 - 使用短句表示快节奏，长句表示慢节奏或情感深度；8）避免使用复杂隐喻或需要背景知识的引用。遵循这些技术规范可显著提升生成质量。',
+      answer: [
+        {
+          title: "结构化叙事",
+          content: "优化故事结构的关键点：",
+          items: [
+            "使用清晰的起承转合结构",
+            "每个转折点对应一个场景",
+            "控制场景密度（250-300字/场景）",
+            "保持叙事节奏的变化",
+          ],
+        },
+        {
+          title: "描述性语言增强",
+          content: "提升描述质量的技巧：",
+          items: [
+            "使用具象而非抽象描述",
+            "添加环境氛围细节",
+            "包含人物情感表现",
+            "注意光影和构图描述",
+          ],
+        },
+        {
+          title: "场景优化策略",
+          content: "提高场景生成质量：",
+          items: [
+            "在描述角色行动前建立环境",
+            "使用明确的情感关键词",
+            "注意人物之间的互动",
+            "考虑画面的景深层次",
+          ],
+        },
+      ],
     },
     {
       question: "图像生成的技术限制与最佳实践是什么？",
-      answer:
-        "当前图像生成的技术限制与应对策略：1）分辨率上限 - 系统支持的最大分辨率为2048x2048像素，超过此限制会导致细节损失；2）处理能力 - 复杂场景描述（超过200字）可能导致部分元素被忽略，建议拆分为多个简单场景；3）批量生成限制 - 单次最多支持8个场景同时生成，更多场景请分批处理；4）计算资源分配 - 生成过程利用GPU加速，系统会根据当前负载动态调整计算资源，高峰期可能导致等待时间延长；5）图像风格一致性 - 为保持连贯性，建议使用相同的种子值和文本权重；6）色彩控制 - 在场景描述中明确指定关键色彩元素；7）图像后处理 - 系统集成了自动后处理流程优化生成图像对比度和清晰度，如需原始输出可联系技术支持。理解这些技术限制并相应调整使用策略，可以显著提升输出质量。",
+      answer: [
+        {
+          title: "技术限制",
+          content: "当前系统的主要限制：",
+          items: [
+            "最大分辨率：2048x2048像素",
+            "单次最多支持8个场景同时生成",
+            "复杂场景描述字数限制200字",
+            "需要GPU资源支持",
+          ],
+        },
+        {
+          title: "性能优化",
+          content: "提升生成效率的方法：",
+          items: [
+            "使用批量生成模式",
+            "合理设置生成参数",
+            "优化场景描述长度",
+            "选择适合的模型",
+          ],
+        },
+        {
+          title: "最佳实践",
+          content: "提高生成质量的建议：",
+          items: [
+            "保持风格一致性（使用相同种子）",
+            "合理控制文本权重",
+            "定期更新模型版本",
+            "使用推荐的参数配置",
+          ],
+        },
+      ],
     },
     {
       question: "如何利用API集成漫画生成功能到自己的应用中？",
-      answer:
-        "我们提供完整的REST API以集成漫画生成功能：1）身份验证 - 使用基于JWT的身份验证系统，请通过开发者门户申请API密钥；2）端点结构 - 主要端点包括`/api/generate`（文本到剧本）和`/api/generate-images`（剧本到图像）；3）请求限制 - 免费账户每小时限制50次请求，付费账户根据套餐调整；4）批处理建议 - 使用批处理API而非多个单独请求以提高效率；5）错误处理 - 实现指数退避重试策略以处理临时性错误；6）缓存策略 - 实现结果缓存以避免重复生成相同内容；7）集成示例 - 可参考我们提供的Node.js、Python和Java实现示例；8）自定义扩展 - 高级用户可通过webhook在生成流程中注入自定义处理逻辑。完整API文档请访问开发者门户：https://api.comicgenerator.dev/docs",
+      answer: [
+        {
+          title: "API集成基础",
+          content: "基本集成步骤：",
+          items: [
+            "申请API密钥（开发者门户）",
+            "了解API限制和配额",
+            "选择合适的集成方式",
+            "测试API连接",
+          ],
+        },
+        {
+          title: "核心API端点",
+          content: "主要功能接口：",
+          items: [
+            "/api/generate：文本到剧本转换",
+            "/api/generate-images：剧本到图像生成",
+            "支持批量处理和异步调用",
+            "提供详细的状态反馈",
+          ],
+        },
+        {
+          title: "最佳实践建议",
+          content: "优化API使用：",
+          items: [
+            "实现请求重试机制",
+            "使用结果缓存",
+            "合理控制并发请求",
+            "监控API使用情况",
+          ],
+        },
+      ],
     },
   ];
 
@@ -535,7 +764,7 @@ export default function ComicGenerator() {
             <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-md flex items-center justify-center">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
-            <span className="font-bold text-gray-800">漫画生成器</span>
+            <span className="font-bold text-gray-800">智绘漫AI</span>
           </div>
 
           {/* 导航链接 */}
@@ -573,7 +802,7 @@ export default function ComicGenerator() {
               常见问题
             </button>
             <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-              Beta
+              V20250803
             </Badge>
           </div>
         </div>
@@ -589,7 +818,7 @@ export default function ComicGenerator() {
             <span className="text-gray-800">创作引擎</span>
           </h1>
           <p className="text-gray-600 text-xl max-w-2xl mx-auto mb-6">
-            突破性AI技术将你的文字转化为专业级漫画，释放无限创意潜能
+            智绘漫AI，用AI技术重新定义漫画创作，让创意无限可能
           </p>
         </div>
 
@@ -1471,16 +1700,58 @@ export default function ComicGenerator() {
 
               {activeAccordion === index && (
                 <div className="p-4 pt-0 border-t border-blue-50 bg-gradient-to-br from-blue-50/30 to-indigo-50/30">
-                  <p className="text-gray-600 whitespace-pre-line text-sm leading-relaxed">
-                    {faq.answer}
-                  </p>
-                  {index === 6 && (
-                    <div className="mt-3 text-xs text-blue-600">
-                      <a href="#" className="underline hover:text-blue-800">
-                        查看完整API文档 →
-                      </a>
+                  {faq.answer.map((section, sectionIndex) => (
+                    <div key={sectionIndex} className="mb-6 last:mb-0">
+                      <h4 className="text-lg font-semibold text-gray-800 mb-2">
+                        {section.title}
+                      </h4>
+                      <p className="text-gray-600 mb-3">{section.content}</p>
+
+                      {Array.isArray(section.items) &&
+                      section.items.some((item) => typeof item === "object") ? (
+                        // 处理包含子标题的项目
+                        <div className="space-y-4">
+                          {section.items.map((item, itemIndex) => {
+                            if (
+                              typeof item === "object" &&
+                              "subtitle" in item
+                            ) {
+                              return (
+                                <div key={itemIndex} className="pl-4">
+                                  <h5 className="text-sm font-medium text-gray-700 mb-2">
+                                    {item.subtitle}
+                                  </h5>
+                                  <ul className="list-disc list-inside space-y-1">
+                                    {item.details.map((detail, detailIndex) => (
+                                      <li
+                                        key={detailIndex}
+                                        className="text-gray-600 text-sm"
+                                      >
+                                        {detail}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              );
+                            }
+                            return null;
+                          })}
+                        </div>
+                      ) : (
+                        // 处理普通列表项
+                        <ul className="list-disc list-inside space-y-1 pl-4">
+                          {section.items.map((item, itemIndex) => (
+                            <li
+                              key={itemIndex}
+                              className="text-gray-600 text-sm"
+                            >
+                              {typeof item === "string" ? item : null}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                     </div>
-                  )}
+                  ))}
                 </div>
               )}
             </div>
@@ -1496,11 +1767,11 @@ export default function ComicGenerator() {
               <div className="w-8 h-8 bg-white/20 rounded-md flex items-center justify-center">
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
-              <span className="font-bold text-xl">漫画生成器</span>
+              <span className="font-bold text-xl">智绘漫AI</span>
             </div>
 
             <p className="text-indigo-200 text-sm">
-              © {new Date().getFullYear()} 漫画生成器. 保留所有权利.
+              © {new Date().getFullYear()} 智绘漫AI. 保留所有权利.
             </p>
           </div>
         </div>
