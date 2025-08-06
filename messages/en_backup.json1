@@ -1,0 +1,713 @@
+{
+    "nav": {
+        "title": "Comic AI",
+        "home": "Home",
+        "pricing": "Pricing",
+        "guide": "Guide",
+        "about": "About",
+        "faq": "FAQ"
+    },
+    "hero": {
+        "title": {
+            "prefix": "AI-Powered",
+            "highlight": "Comic Creation",
+            "suffix": "Engine"
+        },
+        "description": "ZhiHuiMan AI redefines comic creation with AI technology, unleashing unlimited creative potential",
+        "button": {
+            "primary": "Generate Professional Script",
+            "secondary": "Explore Advanced Features"
+        }
+    },
+    "input": {
+        "label": "Enter your story or creative idea",
+        "placeholder": "Enter your story or creative idea here, and we'll transform it into a beautiful comic script...",
+        "remaining": "{count} characters remaining",
+        "sample": "Try Sample Story"
+    },
+    "settings": {
+        "model": {
+            "title": "Text Generation Model",
+            "selected": "Selected"
+        },
+        "scenes": {
+            "title": "Select Number of Scenes",
+            "count": "{count} Scenes"
+        },
+        "ratio": {
+            "title": "Image Ratio"
+        },
+        "style": {
+            "title": "Image Style",
+            "selected": "Selected Style"
+        },
+        "advanced": {
+            "title": "Advanced Settings",
+            "guidance": {
+                "title": "Text Weight",
+                "description": "Controls how closely the generated image follows the text description. Higher values result in more accurate representations, lower values allow more creativity",
+                "creative": "More Creative",
+                "accurate": "More Accurate"
+            },
+            "seed": {
+                "title": "Seed Number",
+                "description": "Base value for physical expansion initial state. Same seed with same parameters will likely generate similar images",
+                "random": "Random",
+                "fixed": "Fixed"
+            }
+        }
+    },
+    "generation": {
+        "loading": "AI Generation in Progress...",
+        "estimate": "Estimated time: 30 seconds",
+        "success": "Generation Successful",
+        "error": "Generation failed, please try again later",
+        "sceneUnit": " scenes",
+        "imageStyle": "Image Style",
+        "aspectRatio": "Aspect Ratio",
+        "selectedStyle": "Selected Style: ",
+        "advancedSettings": "Advanced Settings",
+        "guidanceScaleDescription": "Controls how closely the AI follows your prompt. Higher values = more accurate, lower values = more creative",
+        "creative": "Creative",
+        "accurate": "Accurate",
+        "seedDescription": "Seed value for reproducible results",
+        "random": "Random",
+        "fixed": "Fixed",
+        "generateScript": "Generate Script",
+        "result": {
+            "title": "AI Creation Results",
+            "description": "Here's your professional comic script based on your creative input",
+            "generateButton": "Generate Comic",
+            "downloadButton": "Download Comic",
+            "sceneCount": "Scene Count",
+            "selectedStyle": "Selected Style: ",
+            "advancedSettings": "Advanced Settings",
+            "imageStyle": "Image Style",
+            "aspectRatio": "Aspect Ratio",
+            "scene": "Scene {number}",
+            "download": "Download Image",
+            "render": "Render HD Comic",
+            "rendering": "AI Rendering Images..."
+        }
+    },
+    "activation": {
+        "title": "Activation Code",
+        "placeholder": "Enter activation code",
+        "button": {
+            "activate": "Activate",
+            "change": "Change Code"
+        },
+        "status": {
+            "remaining": "{count} uses remaining",
+            "empty": "Please enter activation code to start"
+        }
+    },
+    "models": {
+        "title": "Select AI Model",
+        "categories": {
+            "recommended": {
+                "name": "Recommended Models",
+                "description": "Our curated high-quality models"
+            },
+            "specialized": {
+                "name": "Specialized Models",
+                "description": "Models optimized for specific domains"
+            },
+            "fast": {
+                "name": "Fast Models",
+                "description": "Quick response, cost-effective"
+            },
+            "experimental": {
+                "name": "Experimental Models",
+                "description": "New technology, potential surprises"
+            }
+        },
+        "tags": {
+            "recommended": "Recommended",
+            "professional": "Professional",
+            "fast": "Fast",
+            "new": "New"
+        },
+        "list": {
+            "qwen_32b": {
+                "name": "QwQ-32B",
+                "description": "High-quality script generation with rich details and logical coherence"
+            },
+            "gpt_4": {
+                "name": "GPT-4",
+                "description": "Powerful capabilities, excels at complex story creation"
+            },
+            "story_xl": {
+                "name": "StoryXL",
+                "description": "Optimized for story narrative with natural plot development"
+            },
+            "comic_pro": {
+                "name": "ComicPro",
+                "description": "Optimized for comic scenes and dialogue"
+            },
+            "fantasy_writer": {
+                "name": "Fantasy Writer",
+                "description": "Excels at creating magical and fantasy stories"
+            },
+            "deepseek_7b": {
+                "name": "DeepSeek-7B",
+                "description": "Fast generation speed with moderate quality"
+            },
+            "gpt_3_5": {
+                "name": "GPT-3.5",
+                "description": "Balanced choice for most scenarios"
+            },
+            "llama_13b": {
+                "name": "Llama-13B",
+                "description": "Open source model, fast speed, low resource usage"
+            },
+            "mixtral_8x7b": {
+                "name": "Mixtral-8x7B",
+                "description": "Mixture of experts model with excellent creative performance"
+            },
+            "claude_3": {
+                "name": "Claude 3",
+                "description": "Anthropic Claude-3 model, excels at creative writing"
+            }
+        }
+    },
+    "styles": {
+        "anime": {
+            "name": "Japanese Anime",
+            "description": "Fresh and bright Japanese anime style"
+        },
+        "comic_book": {
+            "name": "American Comic",
+            "description": "Classic American comic style with bold outlines"
+        },
+        "realistic": {
+            "name": "Realistic",
+            "description": "Photorealistic style with high detail"
+        },
+        "watercolor": {
+            "name": "Watercolor",
+            "description": "Soft watercolor effects with artistic flair"
+        },
+        "pixel_art": {
+            "name": "Pixel Art",
+            "description": "Retro game-style pixel art"
+        },
+        "chinese_painting": {
+            "name": "Chinese Ink Painting",
+            "description": "Traditional ink painting style with profound artistic conception"
+        },
+        "cartoon": {
+            "name": "Cartoon Style",
+            "description": "Simple and bright modern cartoon style"
+        },
+        "cyberpunk": {
+            "name": "Cyberpunk",
+            "description": "Futuristic with neon light effects"
+        },
+        "sketch": {
+            "name": "Sketch Style",
+            "description": "Black and white line art, simple and elegant"
+        }
+    },
+    "ratios": {
+        "1:1": {
+            "name": "1:1 Square"
+        },
+        "3:4": {
+            "name": "3:4 Portrait"
+        },
+        "4:3": {
+            "name": "4:3 Landscape"
+        },
+        "16:9": {
+            "name": "16:9 Widescreen"
+        },
+        "9:16": {
+            "name": "9:16 Vertical"
+        },
+        "custom": "Custom"
+    },
+    "about": {
+        "nav": {
+            "title": "Comic AI",
+            "home": "Home"
+        },
+        "hero": {
+            "title": {
+                "prefix": "Redefining Comic Creation with",
+                "highlight": "AI Technology"
+            },
+            "description": "Comic AI is dedicated to perfectly integrating cutting-edge artificial intelligence technology with traditional comic art, providing creators with unlimited possibilities"
+        },
+        "navigation": {
+            "return": "Return to Home"
+        },
+        "features": {
+            "aiModels": {
+                "title": "Advanced AI Models",
+                "description": "Utilizes the latest deep learning technologies, including diffusion models and large-scale language models, ensuring high-quality and creative generated content"
+            },
+            "architecture": {
+                "title": "Powerful Technical Architecture",
+                "description": "Modern web application built with Next.js and React, providing smooth user experience and fast response speed"
+            },
+            "security": {
+                "title": "Safe and Reliable",
+                "description": "Employs advanced security measures and privacy protection technologies to ensure user data and creative content security"
+            }
+        },
+        "advantages": {
+            "title": {
+                "prefix": "Our",
+                "highlight": "Core Advantages"
+            },
+            "powerful": {
+                "title": "Powerful AI Engine",
+                "description": "Self-developed AI models can understand complex narrative structures, generate high-quality comic content, and support multiple artistic styles"
+            },
+            "global": {
+                "title": "Global Vision",
+                "description": "Supports multi-language creation, integrates Eastern and Western art styles, making creation unrestricted by geography"
+            },
+            "precise": {
+                "title": "Precise Content Generation",
+                "description": "Unique prompt optimization system ensures generated content accurately matches creator intentions"
+            },
+            "innovation": {
+                "title": "Continuous Innovation",
+                "description": "Regularly updates AI models, continuously optimizes generation quality, always maintains technological leadership"
+            }
+        },
+        "team": {
+            "title": {
+                "prefix": "Professional",
+                "highlight": "Technical Experts"
+            },
+            "description": "Our team is led by top experts and consists of dozens of industry AI researchers, software engineers, and comic artists with rich industry experience and professional knowledge. Team members come from well-known technology companies and research institutions, dedicated to applying the latest AI technology to creative fields.",
+            "tags": {
+                "ai": "AI Research",
+                "deep": "Deep Learning",
+                "vision": "Computer Vision",
+                "comic": "Comic Creation",
+                "experience": "User Experience"
+            }
+        },
+        "contact": {
+            "title": {
+                "prefix": "Contact",
+                "highlight": "Us"
+            },
+            "online": "Online Consultation",
+            "email": "Send Email"
+        },
+        "copyright": "© {year} Comic AI. All rights reserved."
+    },
+    "faq": {
+        "title": "Frequently Asked Questions",
+        "subtitle": "Find answers to common questions about our AI comic generator",
+        "questions": {
+            "principle": "How does AI comic generation work?",
+            "models": "What are the differences between AI models?",
+            "styles": "How to choose the right art style?",
+            "quality": "How to improve generation quality?",
+            "cost": "Is this service free?",
+            "copyright": "Who owns the copyright of generated works?",
+            "usage": "How to use generated comics?",
+            "troubleshooting": "What to do when generation fails?",
+            "parameters": "How to adjust generation parameters?",
+            "optimization": "How to optimize generation results?",
+            "structure": "How to design comic structure?",
+            "limitations": "What are the system limitations?",
+            "api_integration": "How to integrate with other systems?"
+        },
+        "answers": {
+            "principle": {
+                "title": "AI Comic Generation Process",
+                "content": "Our system uses advanced AI technology to transform your text into professional comic scripts and images through a two-stage process:",
+                "stage1": {
+                    "subtitle": "Stage 1: Script Generation",
+                    "detail1": "AI analyzes your input text and story structure",
+                    "detail2": "Generates detailed comic script with scene descriptions",
+                    "detail3": "Creates character dialogues and narrative text",
+                    "detail4": "Optimizes pacing and panel layout"
+                },
+                "stage2": {
+                    "subtitle": "Stage 2: Image Generation",
+                    "detail1": "AI interprets the script and creates scene images",
+                    "detail2": "Applies selected art style to maintain consistency",
+                    "detail3": "Generates high-quality comic panels",
+                    "detail4": "Ensures visual coherence across all scenes"
+                }
+            },
+            "models": {
+                "qwq32b": {
+                    "title": "QwQ-32B Model",
+                    "content": "Our most advanced model with exceptional creative capabilities:",
+                    "detail1": "Rich story details and logical coherence",
+                    "detail2": "Excellent at complex narrative structures",
+                    "detail3": "Best for professional comic creation",
+                    "detail4": "Higher resource usage but superior quality"
+                },
+                "deepseek7b": {
+                    "title": "DeepSeek-7B Model",
+                    "content": "Balanced performance model with fast generation speed:",
+                    "detail1": "Fast response time for quick iterations",
+                    "detail2": "Good quality for most use cases",
+                    "detail3": "Cost-effective for regular users",
+                    "detail4": "Ideal for testing and prototyping"
+                },
+                "gpt4": {
+                    "title": "GPT-4 Model",
+                    "content": "Industry-leading language model with powerful capabilities:",
+                    "detail1": "Excellent understanding of complex instructions",
+                    "detail2": "Creates detailed and nuanced stories",
+                    "detail3": "Strong creative writing capabilities",
+                    "detail4": "Best for sophisticated comic narratives"
+                },
+                "storyxl": {
+                    "title": "StoryXL Model",
+                    "content": "Specialized for narrative storytelling:",
+                    "detail1": "Optimized for story flow and pacing",
+                    "detail2": "Natural character development",
+                    "detail3": "Smooth plot progression",
+                    "detail4": "Great for serialized comics"
+                },
+                "grok": {
+                    "title": "Grok Model",
+                    "content": "Fast model for simple scenes:",
+                    "detail1": "Ultra-fast generation",
+                    "detail2": "Optimized for simple scenes",
+                    "detail3": "Basic quality guarantee",
+                    "detail4": "Low resource consumption"
+                },
+                "specialized": {
+                    "title": "Specialized Models",
+                    "content": "Models optimized for specific styles:",
+                    "detail1": "Anime style expert model",
+                    "detail2": "Realistic style expert model",
+                    "detail3": "Cartoon style expert model",
+                    "detail4": "Each model is specially trained"
+                }
+            },
+            "styles": {
+                "title": "Art Style Selection Guide",
+                "content": "Choose art styles based on your comic theme:",
+                "anime": {
+                    "title": "Japanese Anime Style",
+                    "description": "Fresh and bright, perfect for shonen and shojo manga"
+                },
+                "comic_book": {
+                    "title": "American Comic Style",
+                    "description": "Bold outlines and vibrant colors, ideal for superhero stories"
+                },
+                "realistic": {
+                    "title": "Realistic Style",
+                    "description": "Photorealistic rendering for serious narratives"
+                },
+                "watercolor": {
+                    "title": "Watercolor Style",
+                    "description": "Soft and artistic, great for emotional stories"
+                }
+            },
+            "quality": {
+                "title": "Improving Generation Quality",
+                "content": "Follow these tips to get better comic generation results:",
+                "tip1": "Provide detailed and specific descriptions",
+                "tip2": "Use clear character names and consistent traits",
+                "tip3": "Specify scene transitions and emotional tones",
+                "tip4": "Choose appropriate models for your content type",
+                "tip5": "Experiment with different art styles",
+                "tip6": "Use the advanced settings for fine-tuning"
+            },
+            "cost": {
+                "title": "Service Pricing",
+                "content": "We offer flexible pricing options to meet different needs:",
+                "free": "Free tier with daily generation limits",
+                "activation": "Use activation codes for additional generations",
+                "premium": "Premium plans coming soon with unlimited access",
+                "value": "All generated content is yours to keep and use"
+            },
+            "parameters": {
+                "title": "Generation Parameters",
+                "content": "Fine-tune your generation with advanced parameters:",
+                "guidance_scale": {
+                    "title": "Guidance Scale",
+                    "content": "Controls how closely AI follows your prompts:",
+                    "subtitle": "Guidance Scale Settings",
+                    "detail1": "Low values (1-7): More creative freedom",
+                    "detail2": "Medium values (7-12): Balanced creativity and adherence",
+                    "detail3": "High values (12-20): Strict prompt following",
+                    "detail4": "Choose appropriate guidance based on your needs"
+                },
+                "num_inference_steps": {
+                    "title": "Inference Steps",
+                    "content": "Controls generation refinement level:",
+                    "subtitle": "Inference Steps Settings",
+                    "detail1": "Low steps (10-20): Fast generation, moderate quality",
+                    "detail2": "Medium steps (20-30): Balanced speed and quality",
+                    "detail3": "High steps (30-50): Highest quality, longer time",
+                    "detail4": "Higher steps yield more refined generation"
+                },
+                "seed": {
+                    "title": "Random Seed",
+                    "content": "Controls generation randomness:",
+                    "subtitle": "Random Seed Settings",
+                    "detail1": "Random seed: Different results each time",
+                    "detail2": "Fixed seed: Same results for same inputs",
+                    "detail3": "Use to reproduce favorite results",
+                    "detail4": "Experiment with different seed values for diversity"
+                }
+            },
+            "optimization": {
+                "title": "Getting Best Results",
+                "content": "Follow these tips for optimal comic generation:",
+                "hand": {
+                    "title": "Hand Drawing Tips",
+                    "content": "Improve comic quality through hand drawing techniques:",
+                    "detail1": "Use clear lines and contours",
+                    "detail2": "Pay attention to proportions and perspective",
+                    "detail3": "Add appropriate shadows and textures",
+                    "detail4": "Maintain style consistency"
+                },
+                "text": {
+                    "title": "Text Optimization",
+                    "content": "Improve generation results through text descriptions:",
+                    "detail1": "Use specific and detailed scene descriptions",
+                    "detail2": "Define character traits and emotional states",
+                    "detail3": "Specify dialogue style and tone",
+                    "detail4": "Add background story and context"
+                },
+                "tip1": "Provide detailed and specific story descriptions",
+                "tip2": "Use clear character names and consistent traits",
+                "tip3": "Specify scene atmosphere and emotional tone",
+                "tip4": "Choose appropriate models and styles",
+                "tip5": "Utilize advanced parameters for fine-tuning",
+                "tip6": "Experiment with different setting combinations"
+            },
+            "copyright": {
+                "title": "Copyright and Usage Rights",
+                "content": "You have full rights to use generated content:",
+                "ownership": "Users retain full ownership of generated comics",
+                "commercial": "Free to use for both personal and commercial purposes",
+                "attribution": "No attribution required (though appreciated)",
+                "restriction": "Cannot claim AI model as your own creation",
+                "distribution": "Free to distribute and share",
+                "modification": "Feel free to edit and modify"
+            },
+            "usage": {
+                "title": "Using Generated Comics",
+                "content": "Generated comics can be used in various ways:",
+                "personal": "Personal entertainment and sharing",
+                "social": "Social media posts and stories",
+                "commercial": "Commercial projects and publications",
+                "educational": "Educational content and presentations",
+                "modification": "Feel free to edit and enhance further"
+            },
+            "troubleshooting": {
+                "title": "Generation Issues and Solutions",
+                "content": "Common problems and their solutions:",
+                "timeout": "If generation times out, try shorter text or faster models",
+                "quality": "For poor quality, try more detailed prompts or different models",
+                "consistency": "Use consistent character descriptions across scenes",
+                "retry": "Don't hesitate to retry with adjusted parameters",
+                "support": "Contact support if issues persist",
+                "network": "Check network connection stability",
+                "refresh": "Refresh page and try again",
+                "clear": "Clear browser cache and cookies"
+            }
+        }
+    },
+    "common": {
+        "appName": "Comic AI",
+        "copyright": "Comic AI. All rights reserved"
+    },
+    "models": {
+        "qwq32b": {
+            "title": "QwQ-32B Model",
+            "content": "Our most advanced model with exceptional creative capabilities:",
+            "detail1": "Rich story details and logical coherence",
+            "detail2": "Excellent at complex narrative structures",
+            "detail3": "Best for professional comic creation",
+            "detail4": "Higher resource usage but superior quality"
+        },
+        "deepseek7b": {
+            "title": "DeepSeek-7B Model",
+            "content": "Balanced performance model with fast generation speed:",
+            "detail1": "Fast response time for quick iterations",
+            "detail2": "Good quality for most use cases",
+            "detail3": "Cost-effective for regular users",
+            "detail4": "Ideal for testing and prototyping"
+        },
+        "gpt4": {
+            "title": "GPT-4 Model",
+            "content": "Industry-leading language model with powerful capabilities:",
+            "detail1": "Excellent understanding of complex instructions",
+            "detail2": "Creates detailed and nuanced stories",
+            "detail3": "Strong creative writing capabilities",
+            "detail4": "Best for sophisticated comic narratives"
+        },
+        "storyxl": {
+            "title": "StoryXL Model",
+            "content": "Specialized for narrative storytelling:",
+            "detail1": "Optimized for story flow and pacing",
+            "detail2": "Natural character development",
+            "detail3": "Smooth plot progression",
+            "detail4": "Great for serialized comics"
+        },
+        "grok": {
+            "title": "Grok Model",
+            "content": "Fast model for simple scenes:",
+            "detail1": "Ultra-fast generation",
+            "detail2": "Optimized for simple scenes",
+            "detail3": "Basic quality guarantee",
+            "detail4": "Low resource consumption"
+        },
+        "specialized": {
+            "title": "Specialized Models",
+            "content": "Models optimized for specific styles:",
+            "detail1": "Anime style expert model",
+            "detail2": "Realistic style expert model",
+            "detail3": "Cartoon style expert model",
+            "detail4": "Each model is specially trained"
+        }
+    },
+    "styles": {
+        "title": "Art Style Selection Guide",
+        "content": "Choose art styles based on your comic theme:",
+        "anime": {
+            "title": "Japanese Anime Style",
+            "description": "Fresh and bright, perfect for shonen and shojo manga"
+        },
+        "comic_book": {
+            "title": "American Comic Style",
+            "description": "Bold outlines and vibrant colors, ideal for superhero stories"
+        },
+        "realistic": {
+            "title": "Realistic Style",
+            "description": "Photorealistic rendering for serious narratives"
+        },
+        "watercolor": {
+            "title": "Watercolor Style",
+            "description": "Soft and artistic, great for emotional stories"
+        }
+    },
+    "quality": {
+        "title": "Improving Generation Quality",
+        "content": "Follow these tips to get better comic generation results:",
+        "tip1": "Provide detailed and specific descriptions",
+        "tip2": "Use clear character names and consistent traits",
+        "tip3": "Specify scene transitions and emotional tones",
+        "tip4": "Choose appropriate models for your content type",
+        "tip5": "Experiment with different art styles",
+        "tip6": "Use the advanced settings for fine-tuning"
+    },
+    "cost": {
+        "title": "Service Pricing",
+        "content": "We offer flexible pricing options to meet different needs:",
+        "free": "Free tier with daily generation limits",
+        "activation": "Use activation codes for additional generations",
+        "premium": "Premium plans coming soon with unlimited access",
+        "value": "All generated content is yours to keep and use"
+    },
+    "parameters": {
+        "title": "Generation Parameters",
+        "content": "Fine-tune your generation with advanced parameters:",
+        "guidance_scale": {
+            "title": "Guidance Scale",
+            "content": "Controls how closely AI follows your prompts:",
+            "subtitle": "Guidance Scale Settings",
+            "detail1": "Low values (1-7): More creative freedom",
+            "detail2": "Medium values (7-12): Balanced creativity and adherence",
+            "detail3": "High values (12-20): Strict prompt following",
+            "detail4": "Choose appropriate guidance based on your needs"
+        },
+        "num_inference_steps": {
+            "title": "Inference Steps",
+            "content": "Controls generation refinement level:",
+            "subtitle": "Inference Steps Settings",
+            "detail1": "Low steps (10-20): Fast generation, moderate quality",
+            "detail2": "Medium steps (20-30): Balanced speed and quality",
+            "detail3": "High steps (30-50): Highest quality, longer time",
+            "detail4": "Higher steps yield more refined generation"
+        },
+        "seed": {
+            "title": "Random Seed",
+            "content": "Controls generation randomness:",
+            "subtitle": "Random Seed Settings",
+            "detail1": "Random seed: Different results each time",
+            "detail2": "Fixed seed: Same results for same inputs",
+            "detail3": "Use to reproduce favorite results",
+            "detail4": "Experiment with different seed values for diversity"
+        }
+    },
+    "optimization": {
+        "title": "Getting Best Results",
+        "content": "Follow these tips for optimal comic generation:",
+        "hand": {
+            "title": "Hand Drawing Tips",
+            "content": "Improve comic quality through hand drawing techniques:",
+            "detail1": "Use clear lines and contours",
+            "detail2": "Pay attention to proportions and perspective",
+            "detail3": "Add appropriate shadows and textures",
+            "detail4": "Maintain style consistency"
+        },
+        "text": {
+            "title": "Text Optimization",
+            "content": "Improve generation results through text descriptions:",
+            "detail1": "Use specific and detailed scene descriptions",
+            "detail2": "Define character traits and emotional states",
+            "detail3": "Specify dialogue style and tone",
+            "detail4": "Add background story and context"
+        },
+        "tip1": "Provide detailed and specific story descriptions",
+        "tip2": "Use clear character names and consistent traits",
+        "tip3": "Specify scene atmosphere and emotional tone",
+        "tip4": "Choose appropriate models and styles",
+        "tip5": "Utilize advanced parameters for fine-tuning",
+        "tip6": "Experiment with different setting combinations"
+    },
+    "copyright": {
+        "title": "Copyright and Usage Rights",
+        "content": "You have full rights to use generated content:",
+        "ownership": "Users retain full ownership of generated comics",
+        "commercial": "Free to use for both personal and commercial purposes",
+        "attribution": "No attribution required (though appreciated)",
+        "restriction": "Cannot claim AI model as your own creation",
+        "distribution": "Free to distribute and share",
+        "modification": "Feel free to edit and modify"
+    },
+    "usage": {
+        "title": "Using Generated Comics",
+        "content": "Generated comics can be used in various ways:",
+        "personal": "Personal entertainment and sharing",
+        "social": "Social media posts and stories",
+        "commercial": "Commercial projects and publications",
+        "educational": "Educational content and presentations",
+        "modification": "Feel free to edit and enhance further"
+    },
+    "troubleshooting": {
+        "title": "Generation Issues and Solutions",
+        "content": "Common problems and their solutions:",
+        "timeout": "If generation times out, try shorter text or faster models",
+        "quality": "For poor quality, try more detailed prompts or different models",
+        "consistency": "Use consistent character descriptions across scenes",
+        "retry": "Don't hesitate to retry with adjusted parameters",
+        "support": "Contact support if issues persist",
+        "network": "Check network connection stability",
+        "refresh": "Refresh page and try again",
+        "clear": "Clear browser cache and cookies"
+    }
+},
+"common": {
+    "appName": "Comic AI",
+    "copyright": "Comic AI. All rights reserved"
+},
+"footer": {
+    "copyright": " {year} Comic AI. All rights reserved."
+},
+"metadata": {
+    "title": "Comic AI - AI-Powered Comic Creation Engine",
+    "description": "Comic AI redefines comic creation with AI technology, unleashing unlimited creative potential",
+    "keywords": "AI comic generator, comic creation, AI art, comic maker, digital comics, AI manga, comic generator, comic creation tool"
+}
+}

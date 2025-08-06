@@ -1,7 +1,11 @@
-import { NextIntlClientProvider, useMessages } from "next-intl";
+import { NextIntlClientProvider } from "next-intl";
 import { notFound } from "next/navigation";
 import { ReactNode } from "react";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Inter } from "next/font/google";
+import "../globals.css";
+
+const inter = Inter({ subsets: ["latin"] });
 
 export function generateStaticParams() {
   return [{ locale: "en" }, { locale: "zh" }];
@@ -9,17 +13,16 @@ export function generateStaticParams() {
 
 interface RootLayoutProps {
   children: ReactNode;
-  params: {
+  params: Promise<{
     locale: string;
-  };
+  }>;
 }
 
 export default async function RootLayout({
   children,
   params,
 }: RootLayoutProps) {
-  const locale = params.locale;
-
+  const { locale } = await params;
   let messages;
   try {
     messages = (await import(`../../messages/${locale}.json`)).default;
@@ -28,8 +31,8 @@ export default async function RootLayout({
   }
 
   return (
-    <html lang={locale}>
-      <body>
+    <html lang={locale} suppressHydrationWarning>
+      <body className={inter.className}>
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ThemeProvider
             attribute="class"

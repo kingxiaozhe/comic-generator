@@ -1,28 +1,29 @@
 {
     "nav": {
+        "title": "Comic AI",
         "home": "首页",
-        "pricing": "定价",
-        "guide": "使用指南",
-        "about": "关于我们",
+        "pricing": "价格",
+        "guide": "指南",
+        "about": "关于",
         "faq": "常见问题"
     },
     "hero": {
         "title": {
             "prefix": "AI驱动的",
-            "highlight": "智能漫画",
-            "suffix": "创作引擎"
+            "highlight": "漫画创作",
+            "suffix": "引擎"
         },
-        "description": "智绘漫AI，用AI技术重新定义漫画创作，让创意无限可能",
+        "description": "智慧漫AI用AI技术重新定义漫画创作，释放无限创意潜能",
         "button": {
-            "primary": "一键生成专业剧本",
+            "primary": "生成专业脚本",
             "secondary": "探索高级功能"
         }
     },
     "input": {
-        "label": "输入你的文章内容或创意",
-        "placeholder": "在这里输入你的故事内容或创意，我们会将其转化为精美的漫画剧本...",
-        "remaining": "还可以输入 {count} 字",
-        "sample": "试试示例文章"
+        "label": "输入您的故事或创意想法",
+        "placeholder": "在这里输入您的故事或创意想法，我们将把它转化为精美的漫画脚本...",
+        "remaining": "还剩{count}个字符",
+        "sample": "试用示例故事"
     },
     "settings": {
         "model": {
@@ -38,51 +39,538 @@
         },
         "style": {
             "title": "图片风格",
-            "selected": "选择的风格"
+            "selected": "已选择风格"
         },
         "advanced": {
             "title": "高级设置",
             "guidance": {
                 "title": "文本权重",
-                "description": "显示文字（创意描述）对结果图像的影响程度，数值越大图像越接近文字描述，数值越小图像可能更具创造性",
-                "creative": "更具创造性",
-                "accurate": "更贴近描述"
+                "description": "控制生成图像对文本描述的遵循程度。较高值会产生更准确的表现，较低值允许更多创意",
+                "creative": "更具创意",
+                "accurate": "更准确"
             },
             "seed": {
-                "title": "种子数",
-                "description": "用于物理定扩初始状态的基值，若随机种子相同并且其他参数相同，则生成图片大概率一致",
+                "title": "随机种子",
+                "description": "固定随机种子以获得可重现的结果。留空以使用随机种子",
                 "random": "随机",
                 "fixed": "固定"
             }
         }
     },
     "generation": {
-        "loading": "AI智能生成中...",
-        "estimate": "预计需要30秒",
+        "loading": "AI生成中...",
+        "estimate": "预计时间：30秒",
         "success": "生成成功",
-        "error": "生成失败，请稍后再试",
+        "error": "生成失败，请稍后重试",
+        "sceneUnit": "个场景",
+        "imageStyle": "图片风格",
+        "aspectRatio": "图片比例",
+        "selectedStyle": "已选择风格：",
+        "advancedSettings": "高级设置",
+        "guidanceScaleDescription": "控制AI对提示的遵循程度。较高值=更准确，较低值=更有创意",
+        "creative": "创意",
+        "accurate": "准确",
+        "seedDescription": "随机种子值，用于获得可重现的结果",
+        "random": "随机",
+        "fixed": "固定",
+        "generateScript": "生成脚本",
         "result": {
-            "title": "AI智能创作成果",
-            "description": "以下是基于您的创意生成的专业级漫画剧本方案",
-            "scene": "场景 {number}",
+            "title": "AI创作结果",
+            "description": "这是基于您创意输入生成的专业漫画脚本",
+            "generateButton": "生成漫画",
+            "downloadButton": "下载漫画",
+            "sceneCount": "场景数量",
+            "selectedStyle": "已选择风格：",
+            "advancedSettings": "高级设置",
+            "imageStyle": "图片风格",
+            "aspectRatio": "图片比例",
+            "scene": "场景{number}",
             "download": "下载图片",
-            "render": "一键渲染高清漫画",
+            "render": "渲染高清漫画",
             "rendering": "AI渲染图像中..."
         }
     },
     "activation": {
         "title": "激活码",
-        "placeholder": "请输入激活码",
+        "placeholder": "输入激活码",
         "button": {
             "activate": "激活",
-            "change": "更换激活码"
+            "change": "更换代码"
         },
         "status": {
-            "remaining": "剩余使用次数：{count} 次",
-            "empty": "请输入激活码以开始使用"
+            "remaining": "剩余{count}次使用",
+            "empty": "请输入激活码开始使用"
         }
     },
+    "models": {
+        "title": "选择AI模型",
+        "categories": {
+            "recommended": {
+                "name": "推荐模型",
+                "description": "我们精选的高质量模型"
+            },
+            "specialized": {
+                "name": "专业模型",
+                "description": "针对特定领域优化的模型"
+            },
+            "fast": {
+                "name": "快速模型",
+                "description": "快速响应，成本效益"
+            },
+            "experimental": {
+                "name": "实验模型",
+                "description": "新技术，可能有惊喜"
+            }
+        },
+        "tags": {
+            "recommended": "推荐",
+            "professional": "专业",
+            "fast": "快速",
+            "new": "新"
+        },
+        "list": {
+            "qwen_32b": {
+                "name": "QwQ-32B",
+                "description": "高质量脚本生成，具有丰富的细节和逻辑连贯性"
+            },
+            "gpt_4": {
+                "name": "GPT-4",
+                "description": "功能强大的语言模型，擅长复杂故事创作"
+            },
+            "story_xl": {
+                "name": "StoryXL",
+                "description": "针对故事叙述优化，具有自然的情节发展"
+            },
+            "comic_pro": {
+                "name": "ComicPro",
+                "description": "针对漫画场景和对话优化"
+            },
+            "fantasy_writer": {
+                "name": "Fantasy Writer",
+                "description": "擅长创建魔幻和奇幻故事"
+            },
+            "deepseek_7b": {
+                "name": "DeepSeek-7B",
+                "description": "快速生成速度，质量适中"
+            },
+            "gpt_3_5": {
+                "name": "GPT-3.5",
+                "description": "大多数场景的平衡选择"
+            },
+            "llama_13b": {
+                "name": "Llama-13B",
+                "description": "开源模型，快速，低资源使用"
+            },
+            "mixtral_8x7b": {
+                "name": "Mixtral-8x7B",
+                "description": "专家混合模型，具有出色的创意表现"
+            },
+            "claude_3": {
+                "name": "Claude 3",
+                "description": "Anthropic Claude-3模型，擅长创意写作"
+            }
+        }
+    },
+    "styles": {
+        "anime": {
+            "name": "日本动漫",
+            "description": "清新明亮的日本动漫风格"
+        },
+        "comic_book": {
+            "name": "美式漫画",
+            "description": "经典美式漫画风格，粗线条"
+        },
+        "realistic": {
+            "name": "写实",
+            "description": "高细节照片级真实感"
+        },
+        "watercolor": {
+            "name": "水彩",
+            "description": "柔和水彩效果，艺术气息"
+        },
+        "pixel_art": {
+            "name": "像素艺术",
+            "description": "复古游戏风格像素艺术"
+        },
+        "chinese_painting": {
+            "name": "中国水墨",
+            "description": "传统水墨画风格，意境深远"
+        },
+        "cartoon": {
+            "name": "卡通风格",
+            "description": "简洁明亮的现代卡通风格"
+        },
+        "cyberpunk": {
+            "name": "赛博朋克",
+            "description": "霓虹灯效果的未来风格"
+        },
+        "sketch": {
+            "name": "素描风格",
+            "description": "黑白线条艺术，简洁优雅"
+        }
+    },
+    "ratios": {
+        "1:1": {
+            "name": "1:1 方形"
+        },
+        "3:4": {
+            "name": "3:4 竖屏"
+        },
+        "4:3": {
+            "name": "4:3 横屏"
+        },
+        "16:9": {
+            "name": "16:9 宽屏"
+        },
+        "9:16": {
+            "name": "9:16 垂直"
+        },
+        "custom": "自定义"
+    },
+    "about": {
+        "nav": {
+            "title": "Comic AI",
+            "home": "首页"
+        },
+        "hero": {
+            "title": {
+                "prefix": "用AI技术重新定义",
+                "highlight": "漫画创作"
+            },
+            "description": "Comic AI致力于将前沿人工智能技术与传统漫画艺术完美融合，为创作者提供无限可能"
+        },
+        "navigation": {
+            "return": "返回首页"
+        },
+        "features": {
+            "aiModels": {
+                "title": "先进AI模型",
+                "description": "利用最新深度学习技术，包括扩散模型和大规模语言模型，确保生成内容的高质量和创意性"
+            },
+            "architecture": {
+                "title": "强大技术架构",
+                "description": "采用Next.js和React构建的现代Web应用，提供流畅用户体验和快速响应速度"
+            },
+            "security": {
+                "title": "安全可靠",
+                "description": "采用先进安全措施和隐私保护技术，确保用户数据和创作内容安全"
+            }
+        },
+        "advantages": {
+            "title": {
+                "prefix": "我们的",
+                "highlight": "核心优势"
+            },
+            "powerful": {
+                "title": "强大AI引擎",
+                "description": "自研AI模型能够理解复杂叙事结构，生成高质量漫画内容，支持多种艺术风格"
+            },
+            "global": {
+                "title": "全球视野",
+                "description": "支持多语言创作，融合东西方艺术风格，让创作不受地域限制"
+            },
+            "precise": {
+                "title": "精准内容生成",
+                "description": "独特提示优化系统确保生成内容精准匹配创作者意图"
+            },
+            "innovation": {
+                "title": "持续创新",
+                "description": "定期更新AI模型，持续优化生成质量，始终保持技术领先"
+            }
+        },
+        "team": {
+            "title": {
+                "prefix": "专业",
+                "highlight": "技术专家"
+            },
+            "description": "我们的团队由顶尖专家领衔，由数十位行业AI研究员、软件工程师和漫画艺术家组成，具有丰富的行业经验和专业知识。团队成员来自知名科技公司和研究机构，致力于将最新AI技术应用于创意领域。",
+            "tags": {
+                "ai": "AI研究",
+                "deep": "深度学习",
+                "vision": "计算机视觉",
+                "comic": "漫画创作",
+                "experience": "用户体验"
+            }
+        },
+        "contact": {
+            "title": {
+                "prefix": "联系",
+                "highlight": "我们"
+            },
+            "online": "在线咨询",
+            "email": "发送邮件"
+        },
+        "copyright": "© {year} Comic AI. 版权所有"
+    },
+    "faq": {
+        "title": "常见问题",
+        "subtitle": "找到关于我们AI漫画生成器的常见问题的答案",
+        "questions": {
+            "principle": "AI漫画生成如何工作？",
+            "models": "不同AI模型有什么区别？",
+            "styles": "如何选择合适的艺术风格？",
+            "quality": "如何提高生成质量？",
+            "cost": "这个服务免费吗？",
+            "copyright": "谁拥有生成作品的版权？",
+            "usage": "如何使用生成的漫画？",
+            "troubleshooting": "生成失败怎么办？",
+            "parameters": "如何调整生成参数？",
+            "optimization": "如何优化生成结果？",
+            "structure": "如何设计漫画结构？",
+            "limitations": "系统有哪些限制？",
+            "api_integration": "如何与其他系统集成？"
+        },
+        "answers": {
+            "principle": {
+                "title": "AI漫画生成过程",
+                "content": "我们的系统使用先进AI技术，通过两阶段过程将您的文本转化为专业漫画脚本和图像：",
+                "stage1": {
+                    "subtitle": "阶段1：脚本生成",
+                    "detail1": "AI分析您的输入文本和故事结构",
+                    "detail2": "生成详细的漫画脚本和场景描述",
+                    "detail3": "创建角色对话和叙事文本",
+                    "detail4": "优化节奏和面板布局"
+                },
+                "stage2": {
+                    "subtitle": "阶段2：图像生成",
+                    "detail1": "AI解释脚本并创建场景图像",
+                    "detail2": "应用选定的艺术风格保持一致性",
+                    "detail3": "生成高质量漫画面板",
+                    "detail4": "确保所有场景的视觉连贯性"
+                }
+            },
+            "models": {
+                "qwq32b": {
+                    "title": "QwQ-32B模型",
+                    "content": "我们最先进的模型，具有卓越的创意能力：",
+                    "detail1": "丰富的故事细节和逻辑连贯性",
+                    "detail2": "擅长复杂叙事结构",
+                    "detail3": "最适合专业漫画创作",
+                    "detail4": "资源使用较高但质量卓越"
+                },
+                "deepseek7b": {
+                    "title": "DeepSeek-7B模型",
+                    "content": "平衡性能模型，快速生成速度：",
+                    "detail1": "快速响应时间，适合快速迭代",
+                    "detail2": "大多数用例的良好质量",
+                    "detail3": "普通用户的成本效益选择",
+                    "detail4": "测试和原型制作的理想选择"
+                },
+                "gpt4": {
+                    "title": "GPT-4模型",
+                    "content": "行业领先的语言模型，功能强大：",
+                    "detail1": "对复杂指令的出色理解",
+                    "detail2": "创建详细细致的故事",
+                    "detail3": "强大的创意写作能力",
+                    "detail4": "复杂漫画叙事的最佳选择"
+                },
+                "storyxl": {
+                    "title": "StoryXL模型",
+                    "content": "专门用于叙事故事：",
+                    "detail1": "针对故事流程和节奏优化",
+                    "detail2": "自然的角色发展",
+                    "detail3": "流畅的情节进展",
+                    "detail4": "连载漫画的绝佳选择"
+                },
+                "grok": {
+                    "title": "Grok模型",
+                    "content": "简单场景的快速模型：",
+                    "detail1": "超快生成",
+                    "detail2": "针对简单场景优化",
+                    "detail3": "基本质量保证",
+                    "detail4": "低资源消耗"
+                },
+                "specialized": {
+                    "title": "专业模型",
+                    "content": "针对特定风格优化的模型：",
+                    "detail1": "动漫风格专家模型",
+                    "detail2": "写实风格专家模型",
+                    "detail3": "卡通风格专家模型",
+                    "detail4": "每个模型都经过专门训练"
+                }
+            },
+            "styles": {
+                "title": "艺术风格选择指南",
+                "content": "根据漫画主题选择艺术风格：",
+                "anime": {
+                    "title": "日本动漫风格",
+                    "description": "清新明亮，少年和少女漫画的完美选择"
+                },
+                "comic_book": {
+                    "title": "美式漫画风格",
+                    "description": "粗体轮廓和鲜艳色彩，超级英雄故事的理想选择"
+                },
+                "realistic": {
+                    "title": "写实风格",
+                    "description": "照片级真实感渲染，适合严肃叙事"
+                },
+                "watercolor": {
+                    "title": "水彩风格",
+                    "description": "柔和艺术感，适合情感故事"
+                },
+                "cartoon": {
+                    "title": "卡通风格",
+                    "description": "简洁明亮的现代卡通风格"
+                },
+                "cyberpunk": {
+                    "title": "赛博朋克",
+                    "description": "霓虹灯效果的未来风格"
+                },
+                "sketch": {
+                    "title": "素描风格",
+                    "description": "黑白线条艺术，简洁优雅"
+                }
+            },
+            "quality": {
+                "title": "提高生成质量",
+                "content": "遵循这些提示以获得更好的漫画生成结果：",
+                "tip1": "提供详细具体的描述",
+                "tip2": "使用清晰的角色名称和一致的特征",
+                "tip3": "指定场景转换和情感基调",
+                "tip4": "使用适当的艺术风格",
+                "tip5": "调整参数以获得最佳效果",
+                "tip6": "多次尝试以获得理想结果"
+            },
+            "cost": {
+                "title": "定价和费用",
+                "content": "我们提供灵活的定价选项以满足不同需求：",
+                "free": "免费套餐，每日生成限制",
+                "premium": "高级套餐即将推出，无限制访问",
+                "activation": "使用激活码获得额外生成次数",
+                "value": "所有生成的内容都归您所有和使用"
+            },
+            "parameters": {
+                "title": "生成参数",
+                "content": "使用高级参数微调您的生成：",
+                "guidance_scale": {
+                    "title": "引导比例",
+                    "content": "控制AI遵循提示的紧密程度：",
+                    "subtitle": "引导比例设置",
+                    "detail1": "低值(1-7)：更多创意自由",
+                    "detail2": "中值(7-12)：平衡的创意和遵循",
+                    "detail3": "高值(12-20)：严格遵循提示",
+                    "detail4": "根据您的需求选择适当的引导"
+                },
+                "num_inference_steps": {
+                    "title": "推理步骤",
+                    "content": "控制生成细化级别：",
+                    "subtitle": "推理步骤设置",
+                    "detail1": "低步骤(10-20)：快速生成，中等质量",
+                    "detail2": "中步骤(20-30)：平衡速度和质量",
+                    "detail3": "高步骤(30-50)：最高质量，时间较长",
+                    "detail4": "更高步骤产生更精细的生成"
+                },
+                "seed": {
+                    "title": "随机种子",
+                    "content": "控制生成可重复性：",
+                    "subtitle": "种子设置",
+                    "detail1": "固定种子(-1)：每次生成不同的结果",
+                    "detail2": "特定种子(0-2147483647)：可重复的结果",
+                    "detail3": "使用相同种子获得一致输出",
+                    "detail4": "对实验和微调很有用"
+                }
+            },
+            "optimization": {
+                "title": "优化生成质量",
+                "content": "遵循这些提示获得更好的漫画生成结果：",
+                "tip1": "提供详细具体的描述",
+                "tip2": "使用清晰的角色名称和一致的特征",
+                "tip3": "指定场景转换和情感基调",
+                "tip4": "为内容类型选择适当的模型",
+                "tip5": "尝试不同的艺术风格",
+                "tip6": "使用高级设置进行微调",
+                "hand": {
+                    "title": "手部优化",
+                    "content": "改善AI生成图像中的手部质量：",
+                    "detail1": "在提示中明确提及手部位置和姿势",
+                    "detail2": "使用'清晰的手'或'正确的手指'等描述",
+                    "detail3": "避免复杂的手部动作，从简单姿势开始",
+                    "detail4": "使用负面提示避免常见的手部错误"
+                },
+                "text": {
+                    "title": "文本优化",
+                    "content": "在漫画中包含清晰易读的文本：",
+                    "detail1": "使用高对比度的文本和背景",
+                    "detail2": "选择适合漫画的易读字体",
+                    "detail3": "确保对话气泡清晰且位置合适",
+                    "detail4": "在不同场景中保持字体一致性"
+                },
+                "character": {
+                    "title": "角色优化",
+                    "content": "创建一致且令人难忘的角色：",
+                    "detail1": "为每个角色使用清晰、描述性的名字",
+                    "detail2": "保持角色特征和个性的一致性",
+                    "detail3": "为角色提供详细的视觉描述",
+                    "detail4": "使用角色表保持跨场景的一致性"
+                },
+                "story": {
+                    "title": "故事优化",
+                    "content": "创作引人入胜的叙事：",
+                    "detail1": "清晰地规划故事弧线和角色发展",
+                    "detail2": "使用场景转换创造流畅的叙事流",
+                    "detail3": "平衡对话、动作和叙述",
+                    "detail4": "结合情感节拍和节奏变化"
+                },
+                "visual": {
+                    "title": "视觉优化",
+                    "content": "增强漫画的视觉吸引力：",
+                    "detail1": "使用多样的摄像机角度和构图",
+                    "detail2": "注意灯光和氛围营造",
+                    "detail3": "选择适合故事基调的艺术风格",
+                    "detail4": "使用一致的角色设计和背景元素"
+                },
+                "technical": {
+                    "title": "技术优化",
+                    "content": "最大化AI性能：",
+                    "detail1": "使用具体、描述性的提示",
+                    "detail2": "尝试不同模型找到最适合的",
+                    "detail3": "利用高级设置进行微调",
+                    "detail4": "迭代和改进您的提示"
+                }
+            },
+            "copyright": {
+                "title": "版权和使用权限",
+                "content": "您对生成内容拥有全部权利：",
+                "ownership": "用户保留生成漫画的全部所有权",
+                "commercial": "可用于个人和商业目的",
+                "modification": "可自由编辑和修改",
+                "distribution": "可自由分发和分享",
+                "attribution": "无需署名（但感谢）",
+                "restriction": "不得声称AI模型为您的原创"
+            },
+            "usage": {
+                "title": "使用指南",
+                "content": "生成的漫画可用于各种场景：",
+                "personal": "个人娱乐和创意分享",
+                "commercial": "商业项目和营销活动",
+                "educational": "教育培训和演示材料",
+                "social": "社交媒体内容创作",
+                "modification": "可进一步编辑和增强"
+            },
+            "troubleshooting": {
+                "title": "故障排除",
+                "content": "如果您遇到问题，请尝试以下解决方案：",
+                "consistency": "保持一致的角色描述",
+                "timeout": "生成超时？尝试更短的文本或更快的模型",
+                "quality": "质量不佳？尝试更详细的提示或不同的模型",
+                "retry": "调整参数并重试",
+                "support": "联系客户支持",
+                "network": "检查网络连接稳定性",
+                "refresh": "刷新页面并重试",
+                "clear": "清除浏览器缓存和Cookie"
+            }
+        }
+    },
+    "common": {
+        "appName": "Comic AI",
+        "copyright": "Comic AI. 版权所有"
+    },
     "footer": {
-        "copyright": "© {year} 智绘漫AI. 保留所有权利."
+        "copyright": "© {year} Comic AI. 版权所有。"
+    },
+    "metadata": {
+        "title": "Comic AI - AI驱动的漫画创作引擎",
+        "description": "使用先进AI技术将文本转化为专业漫画。轻松创作高质量漫画。",
+        "keywords": "AI漫画生成器，漫画创作，AI艺术，漫画制作，数字漫画，AI漫画，漫画生成器，漫画制作工具"
     }
 }

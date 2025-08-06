@@ -18,8 +18,11 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 export default function AboutPage() {
+  const t = useTranslations("about");
+  
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-indigo-50">
       {/* 导航栏 */}
@@ -30,14 +33,14 @@ export default function AboutPage() {
               <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-md flex items-center justify-center">
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
-              <span className="font-bold text-gray-800">智绘漫AI</span>
+              <span className="font-bold text-gray-800">{t("nav.title")}</span>
             </div>
           </Link>
 
           <Link href="/">
             <Button variant="ghost" size="sm" className="text-gray-600">
               <Home className="w-4 h-4 mr-2" />
-              返回首页
+              {t("navigation.return")}
             </Button>
           </Link>
         </div>
@@ -48,12 +51,12 @@ export default function AboutPage() {
         {/* Hero Section */}
         <div className="text-center mb-16">
           <h1 className="text-4xl font-bold mb-4">
-            <span className="text-gray-800">用</span>
-            <span className="text-blue-600">AI技术</span>
-            <span className="text-gray-800">重新定义漫画创作</span>
+            <span className="text-gray-800">{t("hero.title.prefix")}</span>
+            <span className="text-blue-600">{t("hero.title.highlight")}</span>
+            <span className="text-gray-800">{t("hero.title.suffix")}</span>
           </h1>
           <p className="text-gray-600 text-xl max-w-2xl mx-auto">
-            智绘漫AI致力于将尖端人工智能技术与传统漫画艺术完美融合，为创作者提供无限可能
+            {t("hero.description")}
           </p>
         </div>
 
@@ -66,10 +69,10 @@ export default function AboutPage() {
                   <Brain className="w-6 h-6 text-white" />
                 </div>
                 <h3 className="text-xl font-semibold text-gray-800">
-                  先进AI模型
+                  {t("features.aiModels.title")}
                 </h3>
                 <p className="text-gray-600">
-                  采用最新的深度学习技术，包括扩散模型和大规模语言模型，确保生成内容的高质量和创意性
+                  {t("features.aiModels.description")}
                 </p>
               </div>
 
@@ -78,10 +81,10 @@ export default function AboutPage() {
                   <Code className="w-6 h-6 text-white" />
                 </div>
                 <h3 className="text-xl font-semibold text-gray-800">
-                  强大技术架构
+                  {t("features.architecture.title")}
                 </h3>
                 <p className="text-gray-600">
-                  基于Next.js和React打造的现代化Web应用，提供流畅的用户体验和快速的响应速度
+                  {t("features.architecture.description")}
                 </p>
               </div>
 
@@ -90,10 +93,10 @@ export default function AboutPage() {
                   <Shield className="w-6 h-6 text-white" />
                 </div>
                 <h3 className="text-xl font-semibold text-gray-800">
-                  安全可靠
+                  {t("features.security.title")}
                 </h3>
                 <p className="text-gray-600">
-                  采用先进的安全措施和隐私保护技术，确保用户数据和创作内容的安全性
+                  {t("features.security.description")}
                 </p>
               </div>
             </div>
@@ -103,8 +106,8 @@ export default function AboutPage() {
         {/* 核心优势 */}
         <div className="mb-16">
           <h2 className="text-3xl font-bold text-center mb-8">
-            <span className="text-gray-800">我们的</span>
-            <span className="text-blue-600">核心优势</span>
+            <span className="text-gray-800">{t("advantages.title.prefix")}</span>
+            <span className="text-blue-600">{t("advantages.title.highlight")}</span>
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -116,10 +119,10 @@ export default function AboutPage() {
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                      强大的AI引擎
+                      {t("advantages.powerful.title")}
                     </h3>
                     <p className="text-gray-600">
-                      自主研发的AI模型能够理解复杂的叙事结构，生成高质量的漫画内容，支持多种艺术风格
+                      {t("advantages.powerful.description")}
                     </p>
                   </div>
                 </div>
@@ -134,10 +137,10 @@ export default function AboutPage() {
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                      全球化视野
+                      {t("advantages.global.title")}
                     </h3>
                     <p className="text-gray-600">
-                      支持多语言创作，融合东西方艺术风格，让创作不受地域限制
+                      {t("advantages.global.description")}
                     </p>
                   </div>
                 </div>
@@ -152,10 +155,10 @@ export default function AboutPage() {
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                      精准的内容生成
+                      {t("advantages.precise.title")}
                     </h3>
                     <p className="text-gray-600">
-                      独特的提示词优化系统，确保生成内容准确符合创作者的意图
+                      {t("advantages.precise.description")}
                     </p>
                   </div>
                 </div>
@@ -170,10 +173,10 @@ export default function AboutPage() {
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                      持续创新
+                      {t("advantages.innovation.title")}
                     </h3>
                     <p className="text-gray-600">
-                      定期更新AI模型，不断优化生成质量，始终保持技术领先优势
+                      {t("advantages.innovation.description")}
                     </p>
                   </div>
                 </div>
@@ -185,8 +188,8 @@ export default function AboutPage() {
         {/* 团队介绍 */}
         <div className="mb-16">
           <h2 className="text-3xl font-bold text-center mb-8">
-            <span className="text-gray-800">专业的</span>
-            <span className="text-blue-600">技术大牛</span>
+            <span className="text-gray-800">{t("team.title.prefix")}</span>
+            <span className="text-blue-600">{t("team.title.highlight")}</span>
           </h2>
 
           <Card className="border-blue-100 bg-white/80 backdrop-blur-sm">
@@ -196,20 +199,20 @@ export default function AboutPage() {
                   <Users className="w-8 h-8 text-white" />
                 </div>
                 <p className="text-gray-600 mb-6">
-                  我们的团队由王小者大牛领头，协数十位业界AI研究员、软件工程师和漫画艺术家组成，拥有丰富的行业经验和专业知识。团队成员来自知名科技公司和研究机构，致力于将最新的AI技术应用于创意领域。
+                  {t("team.description")}
                 </p>
                 <div className="flex flex-wrap justify-center gap-2">
-                  <Badge className="bg-blue-100 text-blue-700">AI研究</Badge>
+                  <Badge className="bg-blue-100 text-blue-700">{t("team.tags.ai")}</Badge>
                   <Badge className="bg-purple-100 text-purple-700">
-                    深度学习
+                    {t("team.tags.deep")}
                   </Badge>
                   <Badge className="bg-green-100 text-green-700">
-                    计算机视觉
+                    {t("team.tags.vision")}
                   </Badge>
                   <Badge className="bg-orange-100 text-orange-700">
-                    漫画创作
+                    {t("team.tags.comic")}
                   </Badge>
-                  <Badge className="bg-pink-100 text-pink-700">用户体验</Badge>
+                  <Badge className="bg-pink-100 text-pink-700">{t("team.tags.experience")}</Badge>
                 </div>
               </div>
             </CardContent>
@@ -219,18 +222,18 @@ export default function AboutPage() {
         {/* 联系我们 */}
         <div className="text-center">
           <h2 className="text-3xl font-bold mb-8">
-            <span className="text-gray-800">联系</span>
-            <span className="text-blue-600">我们</span>
+            <span className="text-gray-800">{t("contact.title.prefix")}</span>
+            <span className="text-blue-600">{t("contact.title.highlight")}</span>
           </h2>
 
           <div className="flex justify-center gap-4">
             <Button variant="outline" className="border-blue-200 text-blue-600">
               <MessageSquare className="w-4 h-4 mr-2" />
-              在线咨询
+              {t("contact.online")}
             </Button>
             <Button variant="outline" className="border-blue-200 text-blue-600">
               <Mail className="w-4 h-4 mr-2" />
-              发送邮件
+              {t("contact.email")}
             </Button>
           </div>
         </div>
@@ -244,11 +247,11 @@ export default function AboutPage() {
               <div className="w-8 h-8 bg-white/20 rounded-md flex items-center justify-center">
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
-              <span className="font-bold text-xl">智绘漫AI</span>
+              <span className="font-bold text-xl">{t("nav.title")}</span>
             </div>
 
             <p className="text-indigo-200 text-sm">
-              © {new Date().getFullYear()} 智绘漫AI. 保留所有权利.
+              {t("copyright", { year: new Date().getFullYear() })}
             </p>
           </div>
         </div>

@@ -22,7 +22,7 @@ import {
   ChevronDown,
   ChevronRight,
   Sliders,
-  Dices, // 替换 Dice 为 Dices
+  Dices,
   SlidersHorizontal,
   ChevronsUpDown,
   Check,
@@ -34,13 +34,15 @@ import {
   Tag,
   BookOpen,
   Users,
-  Key, // 添加Key图标
+  Key,
 } from "lucide-react";
 import { ComicPanel } from "@/lib/types";
 import { ActivationModal } from "@/components/ActivationModal";
 import { ActivationService } from "@/lib/activation";
 import { UserSettingsService } from "@/lib/userSettings";
 import Link from "next/link";
+import LanguageSwitcher from "@/components/language-switcher";
+import { useTranslations } from "next-intl";
 
 // 图片比例选项
 type AspectRatio = {
@@ -65,103 +67,105 @@ type ModelCategory = {
   description?: string;
 };
 
-const modelCategories: ModelCategory[] = [
-  { id: "recommended", name: "推荐模型", description: "我们精选的高质量模型" },
+// 模型分类将通过翻译函数动态获取
+const getModelCategories = (t: any): ModelCategory[] => [
+  { 
+    id: "recommended", 
+    name: t("models.categories.recommended.name"), 
+    description: t("models.categories.recommended.description") 
+  },
   {
     id: "specialized",
-    name: "专业模型",
-    description: "针对特定领域优化的模型",
+    name: t("models.categories.specialized.name"),
+    description: t("models.categories.specialized.description"),
   },
-  { id: "fast", name: "快速模型", description: "响应速度快，成本较低" },
-  { id: "experimental", name: "实验模型", description: "新技术，可能有惊喜" },
+  { 
+    id: "fast", 
+    name: t("models.categories.fast.name"), 
+    description: t("models.categories.fast.description") 
+  },
+  { 
+    id: "experimental", 
+    name: t("models.categories.experimental.name"), 
+    description: t("models.categories.experimental.description") 
+  },
 ];
 
-const textModels: TextModel[] = [
+// 文本模型将通过翻译函数动态获取
+const getTextModels = (t: any): TextModel[] => [
   // 推荐模型
   {
-    id: "qwen-32b",
-    name: "QwQ-32B",
-    description: "高质量剧本生成，细节丰富，逻辑连贯",
-    tag: "推荐",
+    id: "qwen_32b",
+    name: t("models.list.qwen_32b.name"),
+    description: t("models.list.qwen_32b.description"),
+    tag: t("models.tags.recommended"),
     category: "recommended",
   },
   {
-    id: "gpt-4",
-    name: "GPT-4",
-    description: "功能强大，擅长复杂剧情创作",
+    id: "gpt_4",
+    name: t("models.list.gpt_4.name"),
+    description: t("models.list.gpt_4.description"),
     category: "recommended",
   },
 
   // 专业模型
   {
-    id: "story-xl",
-    name: "StoryXL",
-    description: "专为故事叙事优化，情节发展自然",
-    tag: "专业",
+    id: "story_xl",
+    name: t("models.list.story_xl.name"),
+    description: t("models.list.story_xl.description"),
+    tag: t("models.tags.professional"),
     category: "specialized",
   },
   {
-    id: "comic-pro",
-    name: "ComicPro",
-    description: "针对漫画场景和对白优化",
-    tag: "专业",
+    id: "comic_pro",
+    name: t("models.list.comic_pro.name"),
+    description: t("models.list.comic_pro.description"),
+    tag: t("models.tags.professional"),
     category: "specialized",
   },
   {
-    id: "fantasy-writer",
-    name: "奇幻创作家",
-    description: "擅长创作魔幻、奇幻类故事",
+    id: "fantasy_writer",
+    name: t("models.list.fantasy_writer.name"),
+    description: t("models.list.fantasy_writer.description"),
     category: "specialized",
   },
 
   // 快速模型
   {
-    id: "deepseek-7b",
-    name: "DeepSeek-7B",
-    description: "生成速度快，质量适中",
-    tag: "快速",
+    id: "deepseek_7b",
+    name: t("models.list.deepseek_7b.name"),
+    description: t("models.list.deepseek_7b.description"),
+    tag: t("models.tags.fast"),
     category: "fast",
   },
   {
-    id: "gpt-3.5",
-    name: "GPT-3.5",
-    description: "平衡的选择，适合大多数场景",
+    id: "gpt_3_5",
+    name: t("models.list.gpt_3_5.name"),
+    description: t("models.list.gpt_3_5.description"),
     category: "fast",
   },
   {
-    id: "llama-13b",
-    name: "Llama-13B",
-    description: "开源模型，速度快，资源占用少",
+    id: "llama_13b",
+    name: t("models.list.llama_13b.name"),
+    description: t("models.list.llama_13b.description"),
     category: "fast",
   },
 
   // 实验模型
   {
-    id: "mixtral-8x7b",
-    name: "Mixtral-8x7B",
-    description: "混合专家模型，创意表现出色",
-    tag: "新品",
+    id: "mixtral_8x7b",
+    name: t("models.list.mixtral_8x7b.name"),
+    description: t("models.list.mixtral_8x7b.description"),
+    tag: t("models.tags.new"),
     category: "experimental",
   },
   {
-    id: "claude-3",
-    name: "Claude 3",
-    description: "擅长长篇创意写作，风格多样",
-    tag: "新品",
+    id: "claude_3",
+    name: t("models.list.claude_3.name"),
+    description: t("models.list.claude_3.description"),
+    tag: t("models.tags.new"),
     category: "experimental",
   },
-];
-
-const aspectRatios: AspectRatio[] = [
-  { id: "1:1", label: "1:1", value: "1:1" },
-  { id: "3:4", label: "3:4", value: "3:4" },
-  { id: "4:3", label: "4:3", value: "4:3" },
-  { id: "16:9", label: "16:9", value: "16:9" },
-  { id: "9:16", label: "9:16", value: "9:16" },
-  { id: "2:3", label: "2:3", value: "2:3" },
-  { id: "3:2", label: "3:2", value: "3:2" },
-  { id: "21:9", label: "21:9", value: "21:9" },
-  { id: "custom", label: "自定义", value: "custom" },
 ];
 
 // 在文件顶部添加图片风格相关的类型定义
@@ -175,61 +179,10 @@ type ImageStyle = {
   tag?: string;
 };
 
-const imageStyles: ImageStyle[] = [
-  {
-    id: "anime",
-    name: "日系动漫",
-    description: "清新明亮的日式动漫风格",
-    icon: "🎌",
-    tag: "推荐",
-  },
-  {
-    id: "comic-book",
-    name: "美式漫画",
-    description: "经典美漫风格，鲜明轮廓线",
-    icon: "🦸",
-    tag: "推荐",
-  },
-  {
-    id: "watercolor",
-    name: "水彩画风",
-    description: "柔和的水彩效果，艺术感",
-    icon: "🎨",
-  },
-  {
-    id: "pixel-art",
-    name: "像素艺术",
-    description: "复古游戏风格的像素艺术",
-    icon: "🎮",
-  },
-  {
-    id: "chinese-painting",
-    name: "中国水墨",
-    description: "传统水墨画风格，意境深远",
-    icon: "🖋️",
-  },
-  {
-    id: "cartoon",
-    name: "卡通风格",
-    description: "简洁明快的现代卡通风格",
-    icon: "😊",
-  },
-  {
-    id: "cyberpunk",
-    name: "赛博朋克",
-    description: "未来主义，霓虹灯效果",
-    icon: "🌃",
-    tag: "新品",
-  },
-  {
-    id: "sketch",
-    name: "素描风格",
-    description: "黑白线稿，简洁大方",
-    icon: "✏️",
-  },
-];
+// 图片风格数据将在函数内部定义
 
 export default function ComicGenerator() {
+  const t = useTranslations();
   const [content, setContent] = useState("");
   const [selectedCount, setSelectedCount] = useState(4);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -325,11 +278,6 @@ export default function ComicGenerator() {
   }, []);
 
   // 处理导航点击，滚动到指定区域
-  const scrollToRef = (ref: React.RefObject<HTMLDivElement>) => {
-    if (ref && ref.current) {
-      ref.current.scrollIntoView({ behavior: "smooth" });
-    }
-  };
 
   // FAQ数据类型定义
   interface FAQItem {
@@ -347,110 +295,30 @@ export default function ComicGenerator() {
     }[];
   }
 
-  // FAQ数据
-  const faqs: FAQItem[] = [
+  const getFaqData = (): FAQItem[] => [
     {
-      question: "漫画生成的技术原理是什么？",
+      question: t('faq.questions.principle'),
       answer: [
         {
-          title: "双阶段AI生成架构",
-          content: "我们采用创新的双阶段生成架构，确保每个环节的输出质量：",
+          title: t('faq.answers.principle.title'),
+          content: t('faq.answers.principle.content'),
           items: [
             {
-              subtitle: "第一阶段：文本理解与剧本生成",
+              subtitle: t('faq.answers.principle.stage1.subtitle'),
               details: [
-                "使用大型语言模型（QwQ-32B, GPT-4等）",
-                "通过精心设计的Prompt Engineering",
-                "将输入文本结构化为专业剧本格式",
-                "包含场景描述、人物动作和对白",
+                t('faq.answers.principle.stage1.detail1'),
+                t('faq.answers.principle.stage1.detail2'),
+                t('faq.answers.principle.stage1.detail3'),
+                t('faq.answers.principle.stage1.detail4'),
               ],
             },
             {
-              subtitle: "第二阶段：视觉内容生成",
+              subtitle: t('faq.answers.principle.stage2.subtitle'),
               details: [
-                "采用Volces ARK的doubao-seededit-3-0-i2i-250628扩散模型",
-                "将剧本转换为高质量视觉呈现",
-                "确保画面风格统一",
-                "支持多种艺术风格",
-              ],
-            },
-          ],
-        },
-        {
-          title: "无缝集成式API调用",
-          content: "系统采用先进的API调用流程，确保：",
-          items: [
-            "两个阶段之间的数据传递高效准确",
-            "支持批量处理多个场景",
-            "实时状态反馈",
-            "错误自动重试机制",
-          ],
-        },
-      ],
-    },
-    {
-      question: "不同文本生成模型之间有什么具体区别？",
-      answer: [
-        {
-          title: "QwQ-32B（旗舰模型）",
-          content: "我们的主力模型，具有以下特点：",
-          items: [
-            "32B参数规模，理解能力强",
-            "擅长复杂叙事和细节描写",
-            "支持上下文关联理解",
-            "生成质量最高，但推理速度较慢",
-          ],
-        },
-        {
-          title: "DeepSeek-7B（平衡型）",
-          content: "性能与速度的最佳平衡：",
-          items: [
-            "7B参数规模，推理速度是QwQ-32B的约3倍",
-            "适合快速原型生成",
-            "质量适中，性价比高",
-            "特别适合批量生成场景",
-          ],
-        },
-        {
-          title: "专业领域模型",
-          content: "针对特定场景优化：",
-          items: [
-            "StoryXL：专注故事结构和情节发展",
-            "ComicPro：优化漫画表现力和分镜设计",
-            "支持风格迁移和场景重构",
-            "可根据具体需求选择",
-          ],
-        },
-      ],
-    },
-    {
-      question: "文本权重和种子数参数如何影响图像生成效果？",
-      answer: [
-        {
-          title: "文本权重（guidance_scale）",
-          content:
-            "控制生成图像与文本描述匹配程度的关键参数。技术上，它决定了扩散模型在采样过程中对条件（文本）的依赖程度。数值范围1.0-10.0，其中：1.0-2.0时模型更注重创造性但可能偏离文本；2.5-5.0是平衡区间；5.0-10.0时严格遵循文本但可能牺牲图像质量。种子数（seed）则是决定初始噪声模式的整数，范围为-1至2147483647，固定种子可在保持其他参数不变的情况下生成相似图像，这对于风格一致性和迭代修改特别有用。随机种子(-1)则每次生成完全不同的结果，适合探索多样创意。",
-          items: [
-            {
-              subtitle: "数值范围：1.0-10.0",
-              details: [
-                "1.0-2.0：更注重创造性，可能偏离文本描述",
-                "2.5-5.0：推荐区间，平衡创意与准确性",
-                "5.0-10.0：严格遵循文本，可能影响画面自然度",
-              ],
-            },
-          ],
-        },
-        {
-          title: "种子数（seed）",
-          content: "决定初始噪声模式：",
-          items: [
-            {
-              subtitle: "取值范围：-1至2147483647",
-              details: [
-                "固定种子：相同参数下生成相似图像",
-                "随机种子（-1）：每次生成全新结果",
-                "适用于风格探索和迭代优化",
+                t('faq.answers.principle.stage2.detail1'),
+                t('faq.answers.principle.stage2.detail2'),
+                t('faq.answers.principle.stage2.detail3'),
+                t('faq.answers.principle.stage2.detail4'),
               ],
             },
           ],
@@ -458,146 +326,218 @@ export default function ComicGenerator() {
       ],
     },
     {
-      question: "如何解决生成图像中的常见问题（手部变形、文字呈现等）？",
+      question: t('faq.questions.models'),
       answer: [
         {
-          title: "手部细节优化",
-          content: "针对手部变形问题的解决方案：",
+          title: t('faq.answers.models.qwq32b.title'),
+          content: t('faq.answers.models.qwq32b.content'),
           items: [
-            '在描述中明确指出"手部自然放置"',
-            "适当提高文本权重至4.0-5.0",
-            "使用手部姿势关键词库",
-            "必要时使用局部重绘功能",
+            t('faq.answers.models.qwq32b.detail1'),
+            t('faq.answers.models.qwq32b.detail2'),
+            t('faq.answers.models.qwq32b.detail3'),
+            t('faq.answers.models.qwq32b.detail4'),
           ],
         },
         {
-          title: "文字呈现增强",
-          content: "改善文字清晰度的技巧：",
+          title: t('faq.answers.models.deepseek7b.title'),
+          content: t('faq.answers.models.deepseek7b.content'),
           items: [
-            '将对话框描述为"包含文字的对话框"',
-            "避免在图像中直接生成复杂文字",
-            "使用后期文字叠加功能",
-            "保持文字区域留白",
+            t('faq.answers.models.deepseek7b.detail1'),
+            t('faq.answers.models.deepseek7b.detail2'),
+            t('faq.answers.models.deepseek7b.detail3'),
+            t('faq.answers.models.deepseek7b.detail4'),
           ],
         },
         {
-          title: "角色一致性",
-          content: "保持角色特征稳定的方法：",
+          title: t('faq.answers.models.specialized.title'),
+          content: t('faq.answers.models.specialized.content'),
           items: [
-            "使用固定的种子值",
-            "维护角色特征关键词列表",
-            "在每个场景中复用角色描述",
-            "使用角色模板功能",
+            t('faq.answers.models.specialized.detail1'),
+            t('faq.answers.models.specialized.detail2'),
+            t('faq.answers.models.specialized.detail3'),
+            t('faq.answers.models.specialized.detail4'),
           ],
         },
       ],
     },
     {
-      question: "如何优化输入内容以获得最佳漫画生成效果？",
+      question: t('faq.questions.parameters'),
       answer: [
         {
-          title: "结构化叙事",
-          content: "优化故事结构的关键点：",
+          title: t('faq.answers.parameters.guidance_scale.title'),
+          content: t('faq.answers.parameters.guidance_scale.content'),
           items: [
-            "使用清晰的起承转合结构",
-            "每个转折点对应一个场景",
-            "控制场景密度（250-300字/场景）",
-            "保持叙事节奏的变化",
+            {
+              subtitle: t('faq.answers.parameters.guidance_scale.subtitle'),
+              details: [
+                t('faq.answers.parameters.guidance_scale.detail1'),
+                t('faq.answers.parameters.guidance_scale.detail2'),
+                t('faq.answers.parameters.guidance_scale.detail3'),
+                t('faq.answers.parameters.guidance_scale.detail4'),
+              ],
+            },
           ],
         },
         {
-          title: "描述性语言增强",
-          content: "提升描述质量的技巧：",
+          title: t('faq.answers.parameters.seed.title'),
+          content: t('faq.answers.parameters.seed.content'),
           items: [
-            "使用具象而非抽象描述",
-            "添加环境氛围细节",
-            "包含人物情感表现",
-            "注意光影和构图描述",
-          ],
-        },
-        {
-          title: "场景优化策略",
-          content: "提高场景生成质量：",
-          items: [
-            "在描述角色行动前建立环境",
-            "使用明确的情感关键词",
-            "注意人物之间的互动",
-            "考虑画面的景深层次",
+            {
+              subtitle: t('faq.answers.parameters.seed.subtitle'),
+              details: [
+                t('faq.answers.parameters.seed.detail1'),
+                t('faq.answers.parameters.seed.detail2'),
+                t('faq.answers.parameters.seed.detail3'),
+                t('faq.answers.parameters.seed.detail4'),
+              ],
+            },
           ],
         },
       ],
     },
     {
-      question: "图像生成的技术限制与最佳实践是什么？",
+      question: t('faq.questions.optimization'),
       answer: [
         {
-          title: "技术限制",
-          content: "当前系统的主要限制：",
+          title: t('faq.answers.optimization.hand.title'),
+          content: t('faq.answers.optimization.hand.content'),
           items: [
-            "最大分辨率：2048x2048像素",
-            "单次最多支持8个场景同时生成",
-            "复杂场景描述字数限制200字",
-            "需要GPU资源支持",
+            t('faq.answers.optimization.hand.detail1'),
+            t('faq.answers.optimization.hand.detail2'),
+            t('faq.answers.optimization.hand.detail3'),
+            t('faq.answers.optimization.hand.detail4'),
           ],
         },
         {
-          title: "性能优化",
-          content: "提升生成效率的方法：",
+          title: t('faq.answers.optimization.text.title'),
+          content: t('faq.answers.optimization.text.content'),
           items: [
-            "使用批量生成模式",
-            "合理设置生成参数",
-            "优化场景描述长度",
-            "选择适合的模型",
+            t('faq.answers.optimization.text.detail1'),
+            t('faq.answers.optimization.text.detail2'),
+            t('faq.answers.optimization.text.detail3'),
+            t('faq.answers.optimization.text.detail4'),
           ],
         },
         {
-          title: "最佳实践",
-          content: "提高生成质量的建议：",
+          title: t('faq.answers.optimization.character.title'),
+          content: t('faq.answers.optimization.character.content'),
           items: [
-            "保持风格一致性（使用相同种子）",
-            "合理控制文本权重",
-            "定期更新模型版本",
-            "使用推荐的参数配置",
+            t('faq.answers.optimization.character.detail1'),
+            t('faq.answers.optimization.character.detail2'),
+            t('faq.answers.optimization.character.detail3'),
+            t('faq.answers.optimization.character.detail4'),
           ],
         },
       ],
     },
     {
-      question: "如何利用API集成漫画生成功能到自己的应用中？",
+      question: t('faq.questions.structure'),
       answer: [
         {
-          title: "API集成基础",
-          content: "基本集成步骤：",
+          title: t('faq.answers.structure.composition.title'),
+          content: t('faq.answers.structure.composition.content'),
           items: [
-            "申请API密钥（开发者门户）",
-            "了解API限制和配额",
-            "选择合适的集成方式",
-            "测试API连接",
+            t('faq.answers.structure.composition.item1'),
+            t('faq.answers.structure.composition.item2'),
+            t('faq.answers.structure.composition.item3'),
+            t('faq.answers.structure.composition.item4'),
           ],
         },
         {
-          title: "核心API端点",
-          content: "主要功能接口：",
+          title: t('faq.answers.structure.scene.title'),
+          content: t('faq.answers.structure.scene.content'),
           items: [
-            "/api/generate：文本到剧本转换",
-            "/api/generate-images：剧本到图像生成",
-            "支持批量处理和异步调用",
-            "提供详细的状态反馈",
+            t('faq.answers.structure.scene.item1'),
+            t('faq.answers.structure.scene.item2'),
+            t('faq.answers.structure.scene.item3'),
+            t('faq.answers.structure.scene.item4'),
           ],
         },
         {
-          title: "最佳实践建议",
-          content: "优化API使用：",
+          title: t('faq.answers.structure.transition.title'),
+          content: t('faq.answers.structure.transition.content'),
           items: [
-            "实现请求重试机制",
-            "使用结果缓存",
-            "合理控制并发请求",
-            "监控API使用情况",
+            t('faq.answers.structure.transition.item1'),
+            t('faq.answers.structure.transition.item2'),
+            t('faq.answers.structure.transition.item3'),
+            t('faq.answers.structure.transition.item4'),
+          ],
+        },
+      ],
+    },
+    {
+      question: t('faq.questions.limitations'),
+      answer: [
+        {
+          title: t('faq.answers.limitations.technical.title'),
+          content: t('faq.answers.limitations.technical.content'),
+          items: [
+            t('faq.answers.limitations.technical.item1'),
+            t('faq.answers.limitations.technical.item2'),
+            t('faq.answers.limitations.technical.item3'),
+            t('faq.answers.limitations.technical.item4'),
+          ],
+        },
+        {
+          title: t('faq.answers.limitations.performance.title'),
+          content: t('faq.answers.limitations.performance.content'),
+          items: [
+            t('faq.answers.limitations.performance.item1'),
+            t('faq.answers.limitations.performance.item2'),
+            t('faq.answers.limitations.performance.item3'),
+            t('faq.answers.limitations.performance.item4'),
+          ],
+        },
+        {
+          title: t('faq.answers.limitations.practices.title'),
+          content: t('faq.answers.limitations.practices.content'),
+          items: [
+            t('faq.answers.limitations.practices.item1'),
+            t('faq.answers.limitations.practices.item2'),
+            t('faq.answers.limitations.practices.item3'),
+            t('faq.answers.limitations.practices.item4'),
+          ],
+        },
+      ],
+    },
+    {
+      question: t('faq.questions.api_integration'),
+      answer: [
+        {
+          title: t('faq.answers.api_integration.basics.title'),
+          content: t('faq.answers.api_integration.basics.content'),
+          items: [
+            t('faq.answers.api_integration.basics.item1'),
+            t('faq.answers.api_integration.basics.item2'),
+            t('faq.answers.api_integration.basics.item3'),
+            t('faq.answers.api_integration.basics.item4'),
+          ],
+        },
+        {
+          title: t('faq.answers.api_integration.endpoints.title'),
+          content: t('faq.answers.api_integration.endpoints.content'),
+          items: [
+            t('faq.answers.api_integration.endpoints.item1'),
+            t('faq.answers.api_integration.endpoints.item1'),
+            t('faq.answers.api_integration.endpoints.item3'),
+            t('faq.answers.api_integration.endpoints.item4'),
+          ],
+        },
+        {
+          title: t('faq.answers.api_integration.practices.title'),
+          content: t('faq.answers.api_integration.practices.content'),
+          items: [
+            t('faq.answers.api_integration.practices.item1'),
+            t('faq.answers.api_integration.practices.item2'),
+            t('faq.answers.api_integration.practices.item3'),
+            t('faq.answers.api_integration.practices.item4'),
           ],
         },
       ],
     },
   ];
+
+  const faqData = getFaqData();
 
   // 切换FAQ手风琴状态
   const toggleAccordion = (index: number) => {
@@ -743,9 +683,28 @@ export default function ComicGenerator() {
   };
 
   // 获取当前选中的模型信息
-  const selectedModelInfo = textModels.find(
+  const selectedModelInfo = getTextModels(t).find(
     (model) => model.id === selectedModel
   );
+
+  // 图片风格选项
+  const imageStyles = [
+    { id: "anime", name: t('styles.anime.name'), description: t('styles.anime.description'), icon: "🎌", tag: "热门" },
+    { id: "comic_book", name: t('styles.comic_book.name'), description: t('styles.comic_book.description'), icon: "💥", tag: "经典" },
+    { id: "realistic", name: t('styles.realistic.name'), description: t('styles.realistic.description'), icon: "📸", tag: "写实" },
+    { id: "cartoon", name: t('styles.cartoon.name'), description: t('styles.cartoon.description'), icon: "🎨", tag: "可爱" },
+    { id: "sketch", name: t('styles.sketch.name'), description: t('styles.sketch.description'), icon: "✏️", tag: "艺术" },
+    { id: "watercolor", name: t('styles.watercolor.name'), description: t('styles.watercolor.description'), icon: "🖌️", tag: "清新" },
+  ];
+
+  // 图片比例选项
+  const aspectRatios = [
+    { id: "1:1", label: t('ratios.1:1.name'), value: "1:1" },
+    { id: "3:4", label: t('ratios.3:4.name'), value: "3:4" },
+    { id: "4:3", label: t('ratios.4:3.name'), value: "4:3" },
+    { id: "16:9", label: t('ratios.16:9.name'), value: "16:9" },
+    { id: "9:16", label: t('ratios.9:16.name'), value: "9:16" },
+  ];
 
   // 激活成功回调
   const handleActivationSuccess = () => {
@@ -753,6 +712,10 @@ export default function ComicGenerator() {
     if (info) {
       setActivationInfo(info);
     }
+  };
+
+  const handleFaqClick = () => {
+    faqRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
@@ -764,43 +727,44 @@ export default function ComicGenerator() {
             <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-md flex items-center justify-center">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
-            <span className="font-bold text-gray-800">智绘漫AI</span>
+            <span className="font-bold text-gray-800">{t("nav.title")}</span>
           </div>
 
           {/* 导航链接 */}
           <div className="flex items-center gap-4">
             <button
               onClick={() =>
-                scrollToRef(homeRef as React.RefObject<HTMLDivElement>)
+                homeRef.current?.scrollIntoView({ behavior: "smooth" })
               }
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm text-gray-700 hover:bg-blue-50 transition-colors"
             >
               <Home className="w-4 h-4" />
-              首页
+              {t("nav.home")}
             </button>
             <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm text-gray-700 hover:bg-blue-50 transition-colors">
               <Tag className="w-4 h-4" />
-              定价
+              {t("nav.pricing")}
             </button>
             <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm text-gray-700 hover:bg-blue-50 transition-colors">
               <BookOpen className="w-4 h-4" />
-              使用指南
+              {t("nav.guide")}
             </button>
             <Link href="/about">
               <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm text-gray-700 hover:bg-blue-50 transition-colors">
                 <Users className="w-4 h-4" />
-                关于我们
+                {t("nav.about")}
               </button>
             </Link>
             <button
               onClick={() =>
-                scrollToRef(faqRef as React.RefObject<HTMLDivElement>)
+                faqRef.current?.scrollIntoView({ behavior: "smooth" })
               }
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm text-gray-700 hover:bg-blue-50 transition-colors"
             >
               <HelpCircle className="w-4 h-4" />
-              常见问题
+              {t("nav.faq")}
             </button>
+            <LanguageSwitcher />
             <Badge variant="secondary" className="bg-blue-100 text-blue-700">
               V20250803
             </Badge>
@@ -813,12 +777,12 @@ export default function ComicGenerator() {
         {/* Hero Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-4">
-            <span className="text-gray-800">AI驱动的</span>
-            <span className="text-blue-600">智能漫画</span>
-            <span className="text-gray-800">创作引擎</span>
+            <span className="text-gray-800">{t("hero.title.prefix")}</span>
+            <span className="text-blue-600">{t("hero.title.highlight")}</span>
+            <span className="text-gray-800">{t("hero.title.suffix")}</span>
           </h1>
           <p className="text-gray-600 text-xl max-w-2xl mx-auto mb-6">
-            智绘漫AI，用AI技术重新定义漫画创作，让创意无限可能
+            {t("hero.description")}
           </p>
         </div>
 
@@ -832,15 +796,15 @@ export default function ComicGenerator() {
                   {activationInfo ? (
                     <>
                       <p className="text-sm font-medium text-gray-800">
-                        激活码：{activationInfo.code}
+                        {t("activation.title")}：{activationInfo.code}
                       </p>
                       <p className="text-xs text-gray-500">
-                        剩余使用次数：{activationInfo.remainingUses} 次
+                        {t("activation.status.remaining", { count: activationInfo.remainingUses })}
                       </p>
                     </>
                   ) : (
                     <p className="text-sm text-gray-600">
-                      请输入激活码以开始使用
+                      {t("activation.status.empty")}
                     </p>
                   )}
                 </div>
@@ -868,7 +832,7 @@ export default function ComicGenerator() {
                   onClick={() => setShowActivationModal(true)}
                   className="border-blue-200 text-blue-600 hover:bg-blue-50"
                 >
-                  {activationInfo ? "更换激活码" : "输入激活码"}
+                  {activationInfo ? t('activation.button.change') : t('activation.button.activate')}
                 </Button>
               </div>
             </div>
@@ -881,7 +845,7 @@ export default function ComicGenerator() {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <label className="text-sm font-medium text-gray-700">
-                  输入你的文章内容或创意
+                  {t('input.label')}
                 </label>
                 <span
                   className={`text-sm ${
@@ -890,14 +854,14 @@ export default function ComicGenerator() {
                       : "text-gray-500"
                   }`}
                 >
-                  还可以输入 {maxLength - content.length} 字
+                  {t('input.remaining', { count: maxLength - content.length })}
                 </span>
               </div>
 
               <Textarea
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                placeholder="在这里输入你的故事内容或创意，我们会将其转化为精美的漫画剧本..."
+                placeholder={t('input.placeholder')}
                 className="min-h-[120px] resize-none border-blue-200 focus:border-blue-400 focus:ring-blue-400/20"
                 maxLength={maxLength}
               />
@@ -909,7 +873,7 @@ export default function ComicGenerator() {
                   onClick={fillSample}
                   className="border-blue-200 text-blue-600 hover:bg-blue-50 bg-transparent"
                 >
-                  试试示例文章
+                  {t('input.sample')}
                 </Button>
               </div>
             </div>
@@ -936,22 +900,22 @@ export default function ComicGenerator() {
                     </div>
                     <div>
                       <label className="font-medium text-gray-800">
-                        文本生成模型
+                        {t('models.title')}
                       </label>
                       {selectedModelInfo && (
                         <div className="text-sm text-gray-500 flex items-center gap-1 mt-0.5">
-                          <span>已选择:</span>
+                          <span>{t('models.selected')}:</span>
                           <span className="font-medium text-blue-600">
                             {selectedModelInfo.name}
                           </span>
                           {selectedModelInfo.tag && (
                             <Badge
                               className={`ml-1.5 text-[10px] h-4 px-1.5 ${
-                                selectedModelInfo.tag === "推荐"
+                                selectedModelInfo.tag === t('models.tags.recommended')
                                   ? "bg-green-100 text-green-800"
-                                  : selectedModelInfo.tag === "专业"
+                                  : selectedModelInfo.tag === t('models.tags.professional')
                                   ? "bg-indigo-100 text-indigo-800"
-                                  : selectedModelInfo.tag === "新品"
+                                  : selectedModelInfo.tag === t('models.tags.new')
                                   ? "bg-orange-100 text-orange-800"
                                   : "bg-blue-100 text-blue-800"
                               }`}
@@ -977,7 +941,7 @@ export default function ComicGenerator() {
                   <div className="mt-2 pt-4 border-t border-gray-100 space-y-4 animate-in fade-in slide-in-from-top duration-300">
                     {/* 模型分类选择器 */}
                     <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
-                      {modelCategories.map((category) => (
+                      {getModelCategories(t).map((category) => (
                         <button
                           key={category.id}
                           type="button"
@@ -1000,11 +964,11 @@ export default function ComicGenerator() {
                     </div>
 
                     {/* 当前分类描述 */}
-                    {modelCategories.find((c) => c.id === activeCategory)
+                    {getModelCategories(t).find((c) => c.id === activeCategory)
                       ?.description && (
                       <p className="text-xs text-gray-500 mt-1">
                         {
-                          modelCategories.find((c) => c.id === activeCategory)
+                          getModelCategories(t).find((c) => c.id === activeCategory)
                             ?.description
                         }
                       </p>
@@ -1014,7 +978,7 @@ export default function ComicGenerator() {
                     <div className="space-y-4 mt-2">
                       <div className="h-[280px] overflow-y-auto pr-2 custom-scrollbar">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                          {textModels
+                          {getTextModels(t)
                             .filter(
                               (model) => model.category === activeCategory
                             )
@@ -1031,24 +995,6 @@ export default function ComicGenerator() {
                                     : "border-gray-100 hover:border-purple-200 bg-white/80 hover:bg-white"
                                 }`}
                               >
-                                {model.tag && (
-                                  <div className="absolute -top-2 -right-2">
-                                    <Badge
-                                      className={`text-xs ${
-                                        model.tag === "推荐"
-                                          ? "bg-green-100 text-green-800 hover:bg-green-200"
-                                          : model.tag === "专业"
-                                          ? "bg-indigo-100 text-indigo-800 hover:bg-indigo-200"
-                                          : model.tag === "新品"
-                                          ? "bg-orange-100 text-orange-800 hover:bg-orange-200"
-                                          : "bg-blue-100 text-blue-800 hover:bg-blue-200"
-                                      }`}
-                                    >
-                                      {model.tag}
-                                    </Badge>
-                                  </div>
-                                )}
-
                                 <div className="flex items-center gap-2">
                                   <div
                                     className={`rounded-full p-1 ${
@@ -1096,13 +1042,15 @@ export default function ComicGenerator() {
                         <span>
                           当前分类共{" "}
                           {
-                            textModels.filter(
+                            getTextModels(t).filter(
                               (model) => model.category === activeCategory
                             ).length
                           }{" "}
-                          个模型
+                          {t('models.count', { count: getTextModels(t).filter(
+                            (model) => model.category === activeCategory
+                          ).length })}
                         </span>
-                        <span>点击卡片选择模型</span>
+                        <span>{t('models.selectHint')}</span>
                       </div>
                     </div>
                   </div>
@@ -1113,7 +1061,7 @@ export default function ComicGenerator() {
               <div className="space-y-4">
                 <label className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
                   <ImageIcon className="w-4 h-4 text-blue-500" />
-                  选择场景数量
+                  {t('generation.result.sceneCount')}
                 </label>
 
                 <div className="flex gap-3 flex-wrap">
@@ -1130,7 +1078,7 @@ export default function ComicGenerator() {
                           : "border-blue-200 text-blue-600 hover:bg-blue-50"
                       }`}
                     >
-                      {count}个场景
+                      {count}{t('generation.sceneUnit')}
                     </Button>
                   ))}
                 </div>
@@ -1169,7 +1117,7 @@ export default function ComicGenerator() {
               <div className="space-y-4">
                 <label className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
                   <Sparkles className="w-4 h-4 text-purple-500" />
-                  图片风格
+                  {t('generation.imageStyle')}
                 </label>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -1225,7 +1173,7 @@ export default function ComicGenerator() {
                 </div>
 
                 <div className="text-xs text-gray-500 text-center">
-                  选择的风格：
+                  {t('generation.selectedStyle')}
                   <span className="font-medium text-purple-600">
                     {imageStyles.find((s) => s.id === selectedStyle)?.name}
                   </span>
@@ -1264,7 +1212,7 @@ export default function ComicGenerator() {
                           : "text-gray-700"
                       }`}
                     >
-                      高级设置
+                      {t('generation.advancedSettings')}
                     </span>
                   </div>
                   {showAdvancedSettings ? (
@@ -1287,13 +1235,13 @@ export default function ComicGenerator() {
                         </Label>
                       </div>
                       <p className="text-xs text-gray-500 pl-7">
-                        显示文字（创意描述）对结果图像的影响程度，数值越大图像越接近文字描述，数值越小图像可能更具创造性
+                        {t('generation.guidanceScaleDescription')}
                       </p>
 
                       <div className="flex flex-col space-y-2 pl-7 pr-2">
                         <div className="flex justify-between text-xs text-indigo-400 px-1">
-                          <span>更具创造性</span>
-                          <span>更贴近描述</span>
+                          <span>{t('generation.creative')}</span>
+                          <span>{t('generation.accurate')}</span>
                         </div>
                         <div className="bg-gradient-to-r from-indigo-50 to-indigo-100 rounded-full p-1">
                           <Slider
@@ -1328,7 +1276,7 @@ export default function ComicGenerator() {
                         </Label>
                       </div>
                       <p className="text-xs text-gray-500 pl-7">
-                        用于物理定扩初始状态的基值，若随机种子相同并且其他参数相同，则生成图片大概率一致
+                        {t('generation.seedDescription')}
                       </p>
 
                       <RadioGroup
@@ -1348,7 +1296,7 @@ export default function ComicGenerator() {
                             htmlFor="random-seed"
                             className="cursor-pointer text-sm text-indigo-700"
                           >
-                            随机
+                            {t('generation.random')}
                           </Label>
                         </div>
                         <div className="flex items-center space-x-2">
@@ -1361,7 +1309,7 @@ export default function ComicGenerator() {
                             htmlFor="fixed-seed"
                             className="cursor-pointer text-sm text-indigo-700"
                           >
-                            固定
+                            {t('generation.fixed')}
                           </Label>
                         </div>
                       </RadioGroup>
@@ -1402,7 +1350,7 @@ export default function ComicGenerator() {
             ) : (
               <>
                 <Wand2 className="w-5 h-5 mr-2" />
-                一键生成专业剧本
+                {t('generation.generateScript')}
               </>
             )}
           </Button>
@@ -1464,7 +1412,7 @@ export default function ComicGenerator() {
                   AI智能创作成果
                 </h2>
                 <p className="text-gray-600">
-                  以下是基于您的创意生成的专业级漫画剧本方案
+                  {t('generation.scriptResult')}
                 </p>
               </div>
 
@@ -1479,7 +1427,7 @@ export default function ComicGenerator() {
                         {i + 1}
                       </div>
                       <h4 className="font-medium text-gray-800">
-                        场景 {i + 1}
+                        {t('generation.scene')} {i + 1}
                       </h4>
                     </div>
 
@@ -1520,12 +1468,12 @@ export default function ComicGenerator() {
                             onClick={() =>
                               handleDownloadImage(
                                 panel.imageUrl,
-                                `场景${i + 1}`
+                                `${t('generation.scene')}${i + 1}`
                               )
                             }
                           >
                             <Download className="w-3 h-3 mr-1" />
-                            下载图片
+                            {t('generation.downloadImage')}
                           </Button>
                         </div>
                       )}
@@ -1544,7 +1492,7 @@ export default function ComicGenerator() {
                           模型:{" "}
                           <span className="font-medium text-purple-600">
                             {
-                              textModels.find((m) => m.id === selectedModel)
+                              getTextModels(t).find((m) => m.id === selectedModel)
                                 ?.name
                             }
                           </span>
@@ -1604,19 +1552,19 @@ export default function ComicGenerator() {
                     {isGeneratingImages ? (
                       <>
                         <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2" />
-                        AI渲染图像中...
+                        {t('generation.renderingImages')}...
                       </>
                     ) : (
                       <>
                         <ImageIcon className="w-5 h-5 mr-2" />
-                        一键渲染高清漫画
+                        {t('generation.renderHDComic')}
                       </>
                     )}
                   </Button>
                   <p className="text-sm text-gray-500 mt-2">
                     {isGeneratingImages
-                      ? "正在生成漫画图像，请稍候..."
-                      : "将基于上述剧本内容生成完整的漫画图像"}
+                      ? t('generation.renderingComic')
+                      : t('generation.willGenerateComic')}
                   </p>
                 </div>
               </div>
@@ -1631,7 +1579,7 @@ export default function ComicGenerator() {
                       className="text-gray-600 hover:text-pink-600"
                     >
                       <Heart className="w-4 h-4 mr-1" />
-                      喜欢
+                      {t('common.like')}
                     </Button>
                     <Button
                       variant="ghost"
@@ -1639,7 +1587,7 @@ export default function ComicGenerator() {
                       className="text-gray-600 hover:text-pink-600"
                     >
                       <MessageCircle className="w-4 h-4 mr-1" />
-                      评论
+                      {t('common.comment')}
                     </Button>
                     <Button
                       variant="ghost"
@@ -1647,14 +1595,14 @@ export default function ComicGenerator() {
                       className="text-gray-600 hover:text-pink-600"
                     >
                       <Share className="w-4 h-4 mr-1" />
-                      分享
+                      {t('common.share')}
                     </Button>
                   </div>
                   <Badge
                     variant="secondary"
                     className="bg-green-100 text-green-700"
                   >
-                    生成成功
+                    {t('common.success')}
                   </Badge>
                 </div>
               </div>
@@ -1668,16 +1616,15 @@ export default function ComicGenerator() {
         {/* FAQ标题优化 */}
         <div className="text-center mb-10">
           <h2 className="text-3xl font-bold mb-4">
-            <span className="text-gray-800">专业</span>
-            <span className="text-blue-600">技术解析</span>
+            {t('faq.title')}
           </h2>
           <p className="text-gray-600">
-            深度了解我们的人工智能驱动引擎与前沿创作技术
+            {t('faq.subtitle')}
           </p>
         </div>
 
         <div className="space-y-4 mb-8 max-w-3xl mx-auto">
-          {faqs.map((faq, index) => (
+          {faqData.map((faq: FAQItem, index: number) => (
             <div
               key={index}
               className="border border-blue-100 rounded-xl overflow-hidden bg-white/70 backdrop-blur-sm shadow-sm"
@@ -1700,7 +1647,7 @@ export default function ComicGenerator() {
 
               {activeAccordion === index && (
                 <div className="p-4 pt-0 border-t border-blue-50 bg-gradient-to-br from-blue-50/30 to-indigo-50/30">
-                  {faq.answer.map((section, sectionIndex) => (
+                  {faq.answer.map((section: FAQItem['answer'][0], sectionIndex: number) => (
                     <div key={sectionIndex} className="mb-6 last:mb-0">
                       <h4 className="text-lg font-semibold text-gray-800 mb-2">
                         {section.title}
@@ -1710,8 +1657,8 @@ export default function ComicGenerator() {
                       {Array.isArray(section.items) &&
                       section.items.some((item) => typeof item === "object") ? (
                         // 处理包含子标题的项目
-                        <div className="space-y-4">
-                          {section.items.map((item, itemIndex) => {
+                         <div className="space-y-4">
+                           {section.items.map((item: string | { subtitle: string; details: string[] }, itemIndex: number) => {
                             if (
                               typeof item === "object" &&
                               "subtitle" in item
@@ -1721,8 +1668,8 @@ export default function ComicGenerator() {
                                   <h5 className="text-sm font-medium text-gray-700 mb-2">
                                     {item.subtitle}
                                   </h5>
-                                  <ul className="list-disc list-inside space-y-1">
-                                    {item.details.map((detail, detailIndex) => (
+                                   <ul className="list-disc list-inside space-y-1">
+                                     {item.details.map((detail: string, detailIndex: number) => (
                                       <li
                                         key={detailIndex}
                                         className="text-gray-600 text-sm"
@@ -1739,8 +1686,8 @@ export default function ComicGenerator() {
                         </div>
                       ) : (
                         // 处理普通列表项
-                        <ul className="list-disc list-inside space-y-1 pl-4">
-                          {section.items.map((item, itemIndex) => (
+                         <ul className="list-disc list-inside space-y-1 pl-4">
+                           {section.items.map((item: string | { subtitle: string; details: string[] }, itemIndex: number) => (
                             <li
                               key={itemIndex}
                               className="text-gray-600 text-sm"
@@ -1767,11 +1714,11 @@ export default function ComicGenerator() {
               <div className="w-8 h-8 bg-white/20 rounded-md flex items-center justify-center">
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
-              <span className="font-bold text-xl">智绘漫AI</span>
+              <span className="font-bold text-xl">{t('common.appName')}</span>
             </div>
 
             <p className="text-indigo-200 text-sm">
-              © {new Date().getFullYear()} 智绘漫AI. 保留所有权利.
+              © {new Date().getFullYear()} {t('common.copyright')}
             </p>
           </div>
         </div>
