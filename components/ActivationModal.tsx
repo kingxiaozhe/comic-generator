@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { X, Key, CheckCircle, AlertCircle } from "lucide-react";
 import { ActivationService } from "@/lib/activation";
+import { useTranslations } from "next-intl";
 
 interface ActivationModalProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ export function ActivationModal({
   onClose,
   onSuccess,
 }: ActivationModalProps) {
+  const t = useTranslations();
   const [code, setCode] = useState("");
   const [message, setMessage] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
@@ -29,17 +31,21 @@ export function ActivationModal({
 
   const handleActivate = () => {
     if (!code.trim()) {
-      setMessage("请输入激活码");
+      setMessage(t("activation.status.empty"));
       setIsSuccess(false);
       return;
     }
 
     setIsLoading(true);
 
-    // 模拟验证延迟
     setTimeout(() => {
       const result = ActivationService.activateCode(code);
-      setMessage(result.message);
+      setMessage(
+        result.message ||
+          (result.success
+            ? t("activation.status.success")
+            : t("activation.status.invalid"))
+      );
       setIsSuccess(result.success);
 
       if (result.success) {
@@ -67,7 +73,7 @@ export function ActivationModal({
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
               <Key className="w-5 h-5 text-blue-500" />
-              输入激活码
+              {t("activation.title")}
             </h2>
             <Button
               variant="ghost"
@@ -79,15 +85,14 @@ export function ActivationModal({
             </Button>
           </div>
 
-          {/* 激活码输入区域 */}
           <div className="space-y-4">
             <div>
-              <Label htmlFor="activation-code">激活码</Label>
+              <Label htmlFor="activation-code">{t("activation.title")}</Label>
               <div className="mt-1.5 relative">
                 <Input
                   id="activation-code"
                   type="text"
-                  placeholder="请输入激活码"
+                  placeholder={t("activation.placeholder")}
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
                   className="pr-8"
@@ -121,13 +126,15 @@ export function ActivationModal({
 
             <div className="flex justify-end space-x-2 pt-4">
               <Button variant="outline" onClick={handleClose}>
-                取消
+                {t("common.cancel", { default: "Cancel" })}
               </Button>
               <Button
                 onClick={handleActivate}
                 disabled={!code.trim() || isLoading}
               >
-                {isLoading ? "激活中..." : "激活"}
+                {isLoading
+                  ? t("common.loading", { default: "Loading..." })
+                  : t("activation.button.activate")}
               </Button>
             </div>
           </div>

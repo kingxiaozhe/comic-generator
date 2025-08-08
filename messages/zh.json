@@ -74,6 +74,9 @@
         "random": "随机",
         "fixed": "固定",
         "generateScript": "生成脚本",
+        "scriptResult": "这是基于您创意输入生成的专业漫画脚本",
+        "renderHDComic": "渲染高清漫画",
+        "willGenerateComic": "即将生成漫画",
         "result": {
             "title": "AI创作结果",
             "description": "这是基于您创意输入生成的专业漫画脚本",
@@ -99,11 +102,15 @@
         },
         "status": {
             "remaining": "剩余{count}次使用",
-            "empty": "请输入激活码开始使用"
+            "empty": "请输入激活码开始使用",
+            "invalid": "无效的激活码",
+            "success": "激活成功！"
         }
     },
     "models": {
         "title": "选择AI模型",
+        "count": "{count} 个模型",
+        "selectHint": "选择一个模型开始",
         "categories": {
             "recommended": {
                 "name": "推荐模型",
@@ -558,12 +565,95 @@
                 "network": "检查网络连接稳定性",
                 "refresh": "刷新页面并重试",
                 "clear": "清除浏览器缓存和Cookie"
+            },
+            "structure": {
+                "composition": {
+                    "title": "页面构成要点",
+                    "content": "建立清晰的叙事层级，保持一致的阅读流与视觉权重分配。",
+                    "item1": "明确视觉焦点与阅读顺序",
+                    "item2": "面板大小变化营造节奏",
+                    "item3": "善用留白分隔情感拍点",
+                    "item4": "跨页保持视觉一致性"
+                },
+                "scene": {
+                    "title": "场景设计原则",
+                    "content": "每个场景都需承担功能：引入/发展/转折/收束。",
+                    "item1": "明确时间地点与氛围",
+                    "item2": "界定角色目标与阻力",
+                    "item3": "镜头语言与情绪基调一致",
+                    "item4": "相邻场景间逻辑连续"
+                },
+                "transition": {
+                    "title": "转场衔接技巧",
+                    "content": "使用视觉与叙事线索平滑连接画格。",
+                    "item1": "匹配动作或运动方向",
+                    "item2": "运用意象符号建立主题桥",
+                    "item3": "对比手法强化戏剧拍点",
+                    "item4": "保持时空关系清晰"
+                }
+            },
+            "limitations": {
+                "technical": {
+                    "title": "技术限制",
+                    "content": "理解当前模型与平台能力边界，合理设定预期。",
+                    "item1": "分辨率与比例范围约束",
+                    "item2": "跨画格角色一致性可能波动",
+                    "item3": "复杂手部/姿态渲染较难",
+                    "item4": "生成时延受模型与负载影响"
+                },
+                "performance": {
+                    "title": "性能考量",
+                    "content": "按场景权衡速度与质量的取舍。",
+                    "item1": "迭代阶段使用更快模型",
+                    "item2": "草稿降步骤，定稿升步骤",
+                    "item3": "缓存提示并复用种子提升稳定性",
+                    "item4": "避免在一次请求中输入过长文本"
+                },
+                "practices": {
+                    "title": "推荐实践",
+                    "content": "采用最佳实践提升鲁棒性与一致性。",
+                    "item1": "提示模块化：角色/风格/约束",
+                    "item2": "维护角色表与场景笔记",
+                    "item3": "每次只改动一个变量便于评估",
+                    "item4": "记录设置方便复现结果"
+                }
+            },
+            "api_integration": {
+                "basics": {
+                    "title": "集成基础",
+                    "content": "两阶段流水线：先脚本生成，再图像生成。",
+                    "item1": "文本模型生成结构化脚本",
+                    "item2": "将场景映射为图像提示",
+                    "item3": "传递 seed/风格以保持一致性",
+                    "item4": "合理处理错误与重试"
+                },
+                "endpoints": {
+                    "title": "关键端点",
+                    "content": "建议路由分离，提升清晰度与扩展性。",
+                    "item1": "POST /api/generate：脚本生成",
+                    "item2": "POST /api/generate-images：图像生成",
+                    "item3": "正确传递尺寸/比例映射",
+                    "item4": "记录请求/响应便于调试"
+                },
+                "practices": {
+                    "title": "集成最佳实践",
+                    "content": "确保幂等、可观测与安全性。",
+                    "item1": "校验输入并清理提示词",
+                    "item2": "为长请求设置超时与进度反馈",
+                    "item3": "持久化场景元数据便于复渲染",
+                    "item4": "遵守速率限制并实现退避"
+                }
             }
         }
     },
     "common": {
         "appName": "Comic AI",
-        "copyright": "Comic AI. 版权所有"
+        "copyright": "Comic AI. 版权所有",
+        "languageSaved": "语言偏好已保存",
+        "like": "点赞",
+        "comment": "评论",
+        "share": "分享",
+        "success": "成功"
     },
     "footer": {
         "copyright": "© {year} Comic AI. 版权所有。"
@@ -572,5 +662,15 @@
         "title": "Comic AI - AI驱动的漫画创作引擎",
         "description": "使用先进AI技术将文本转化为专业漫画。轻松创作高质量漫画。",
         "keywords": "AI漫画生成器，漫画创作，AI艺术，漫画制作，数字漫画，AI漫画，漫画生成器，漫画制作工具"
+    },
+    "styleTags": {
+        "hot": "热门",
+        "classic": "经典",
+        "realistic": "写实",
+        "cute": "可爱",
+        "art": "艺术",
+        "fresh": "清新",
+        "recommended": "推荐",
+        "new": "新品"
     }
 }

@@ -3,6 +3,8 @@
 import { useLocale } from "next-intl";
 import { useRouter, usePathname } from "next/navigation";
 import { Globe } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useToast } from "@/components/ui/use-toast";
 
 const LANGUAGE_NAMES = {
   en: "English",
@@ -13,34 +15,40 @@ export default function LanguageSwitcher() {
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
+  const t = useTranslations();
+  const { toast } = useToast();
 
   const switchLanguage = () => {
     const nextLocale = locale === "en" ? "zh" : "en";
-    
-    // 获取当前路径
+
     const currentPath = pathname;
-    
-    // 构建新的路径
     let newPath: string;
-    
-    if (currentPath === '/') {
-      // 如果是根路径，直接跳转到对应语言
+
+    if (currentPath === "/") {
       newPath = `/${nextLocale}`;
     } else if (currentPath.startsWith(`/${locale}`)) {
-      // 如果路径以当前locale开头，替换它
       newPath = currentPath.replace(`/${locale}`, `/${nextLocale}`);
     } else {
-      // 如果路径没有locale前缀，添加它
       newPath = `/${nextLocale}${currentPath}`;
     }
-    
-    // 确保路径有效
-    if (newPath === '') {
-      newPath = `/${nextLocale}`;
-    }
-    
-    // 使用replace而不是push，避免历史记录问题
+
+    // 本地存储 + Cookie（与中间件一致）
+    try {
+      localStorage.setItem("preferred_locale", nextLocale);
+      document.cookie = `NEXT_LOCALE=${nextLocale}; path=/; max-age=${
+        60 * 60 * 24 * 365
+      }`;
+    } catch (_) {}
+
     router.push(newPath);
+
+    // 轻提示：语言偏好已保存
+    toast({
+      description: t("common.languageSaved", {
+        default: "Language preference saved",
+      }),
+      duration: 1600,
+    });
   };
 
   return (

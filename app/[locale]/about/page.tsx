@@ -18,17 +18,18 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 export default function AboutPage() {
   const t = useTranslations("about");
-  
+  const locale = useLocale();
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-indigo-50">
       {/* 导航栏 */}
       <div className="bg-white/90 backdrop-blur-sm border-b border-blue-100 sticky top-0 z-20">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link href="/">
+          <Link href={`/${locale}`}>
             <div className="flex items-center gap-2 cursor-pointer">
               <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-md flex items-center justify-center">
                 <Sparkles className="w-5 h-5 text-white" />
@@ -37,7 +38,7 @@ export default function AboutPage() {
             </div>
           </Link>
 
-          <Link href="/">
+          <Link href={`/${locale}`}>
             <Button variant="ghost" size="sm" className="text-gray-600">
               <Home className="w-4 h-4 mr-2" />
               {t("navigation.return")}
@@ -106,8 +107,12 @@ export default function AboutPage() {
         {/* 核心优势 */}
         <div className="mb-16">
           <h2 className="text-3xl font-bold text-center mb-8">
-            <span className="text-gray-800">{t("advantages.title.prefix")}</span>
-            <span className="text-blue-600">{t("advantages.title.highlight")}</span>
+            <span className="text-gray-800">
+              {t("advantages.title.prefix")}
+            </span>
+            <span className="text-blue-600">
+              {t("advantages.title.highlight")}
+            </span>
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -198,11 +203,11 @@ export default function AboutPage() {
                 <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center mx-auto mb-6">
                   <Users className="w-8 h-8 text-white" />
                 </div>
-                <p className="text-gray-600 mb-6">
-                  {t("team.description")}
-                </p>
+                <p className="text-gray-600 mb-6">{t("team.description")}</p>
                 <div className="flex flex-wrap justify-center gap-2">
-                  <Badge className="bg-blue-100 text-blue-700">{t("team.tags.ai")}</Badge>
+                  <Badge className="bg-blue-100 text-blue-700">
+                    {t("team.tags.ai")}
+                  </Badge>
                   <Badge className="bg-purple-100 text-purple-700">
                     {t("team.tags.deep")}
                   </Badge>
@@ -212,7 +217,9 @@ export default function AboutPage() {
                   <Badge className="bg-orange-100 text-orange-700">
                     {t("team.tags.comic")}
                   </Badge>
-                  <Badge className="bg-pink-100 text-pink-700">{t("team.tags.experience")}</Badge>
+                  <Badge className="bg-pink-100 text-pink-700">
+                    {t("team.tags.experience")}
+                  </Badge>
                 </div>
               </div>
             </CardContent>
@@ -223,7 +230,9 @@ export default function AboutPage() {
         <div className="text-center">
           <h2 className="text-3xl font-bold mb-8">
             <span className="text-gray-800">{t("contact.title.prefix")}</span>
-            <span className="text-blue-600">{t("contact.title.highlight")}</span>
+            <span className="text-blue-600">
+              {t("contact.title.highlight")}
+            </span>
           </h2>
 
           <div className="flex justify-center gap-4">

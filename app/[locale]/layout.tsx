@@ -18,6 +18,28 @@ interface RootLayoutProps {
   }>;
 }
 
+function LocaleSync({ locale }: { locale: string }) {
+  // 客户端同步 preferred_locale -> Cookie，并按需跳转
+  if (typeof window !== "undefined") {
+    try {
+      const preferred = localStorage.getItem("preferred_locale");
+      if (preferred && preferred !== locale) {
+        document.cookie = `NEXT_LOCALE=${preferred}; path=/; max-age=${
+          60 * 60 * 24 * 365
+        }`;
+        const target = `/${preferred}${window.location.pathname.replace(
+          /^\/(en|zh)/,
+          ""
+        )}`;
+        if (window.location.pathname !== target) {
+          window.location.replace(target);
+        }
+      }
+    } catch (_) {}
+  }
+  return null;
+}
+
 export default async function RootLayout({
   children,
   params,
@@ -40,6 +62,8 @@ export default async function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
+            {/* 同步本地偏好语言 */}
+            <LocaleSync locale={locale} />
             {children}
           </ThemeProvider>
         </NextIntlClientProvider>

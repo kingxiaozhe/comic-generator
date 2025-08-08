@@ -41,7 +41,10 @@ export class ActivationService {
       d: this.encode("朋友分享码 - 1次使用"),
     },
     [this.encode("QUICK-TEST-A")]: { u: 1, d: this.encode("快速测试码 - 1次") },
-    [this.encode("QUICK-TEST-B")]: { u: 1, d: this.encode("快速测试码 - 1次") },
+    [this.encode("QUICK-TEST-B")]: {
+      u: 100,
+      d: this.encode("快速测试码 - 100次"),
+    },
   };
 
   private static readonly STORAGE_KEY = this.encode("activated_code_usage");

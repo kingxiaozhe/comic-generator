@@ -41,6 +41,7 @@ import { ActivationModal } from "@/components/ActivationModal";
 import { ActivationService } from "@/lib/activation";
 import { UserSettingsService } from "@/lib/userSettings";
 import Link from "next/link";
+import { useLocale } from "next-intl";
 import LanguageSwitcher from "@/components/language-switcher";
 import { useTranslations } from "next-intl";
 
@@ -69,25 +70,25 @@ type ModelCategory = {
 
 // 模型分类将通过翻译函数动态获取
 const getModelCategories = (t: any): ModelCategory[] => [
-  { 
-    id: "recommended", 
-    name: t("models.categories.recommended.name"), 
-    description: t("models.categories.recommended.description") 
+  {
+    id: "recommended",
+    name: t("models.categories.recommended.name"),
+    description: t("models.categories.recommended.description"),
   },
   {
     id: "specialized",
     name: t("models.categories.specialized.name"),
     description: t("models.categories.specialized.description"),
   },
-  { 
-    id: "fast", 
-    name: t("models.categories.fast.name"), 
-    description: t("models.categories.fast.description") 
+  {
+    id: "fast",
+    name: t("models.categories.fast.name"),
+    description: t("models.categories.fast.description"),
   },
-  { 
-    id: "experimental", 
-    name: t("models.categories.experimental.name"), 
-    description: t("models.categories.experimental.description") 
+  {
+    id: "experimental",
+    name: t("models.categories.experimental.name"),
+    description: t("models.categories.experimental.description"),
   },
 ];
 
@@ -297,98 +298,28 @@ export default function ComicGenerator() {
 
   const getFaqData = (): FAQItem[] => [
     {
-      question: t('faq.questions.principle'),
+      question: t("faq.questions.principle"),
       answer: [
         {
-          title: t('faq.answers.principle.title'),
-          content: t('faq.answers.principle.content'),
+          title: t("faq.answers.principle.title"),
+          content: t("faq.answers.principle.content"),
           items: [
             {
-              subtitle: t('faq.answers.principle.stage1.subtitle'),
+              subtitle: t("faq.answers.principle.stage1.subtitle"),
               details: [
-                t('faq.answers.principle.stage1.detail1'),
-                t('faq.answers.principle.stage1.detail2'),
-                t('faq.answers.principle.stage1.detail3'),
-                t('faq.answers.principle.stage1.detail4'),
+                t("faq.answers.principle.stage1.detail1"),
+                t("faq.answers.principle.stage1.detail2"),
+                t("faq.answers.principle.stage1.detail3"),
+                t("faq.answers.principle.stage1.detail4"),
               ],
             },
             {
-              subtitle: t('faq.answers.principle.stage2.subtitle'),
+              subtitle: t("faq.answers.principle.stage2.subtitle"),
               details: [
-                t('faq.answers.principle.stage2.detail1'),
-                t('faq.answers.principle.stage2.detail2'),
-                t('faq.answers.principle.stage2.detail3'),
-                t('faq.answers.principle.stage2.detail4'),
-              ],
-            },
-          ],
-        },
-      ],
-    },
-    {
-      question: t('faq.questions.models'),
-      answer: [
-        {
-          title: t('faq.answers.models.qwq32b.title'),
-          content: t('faq.answers.models.qwq32b.content'),
-          items: [
-            t('faq.answers.models.qwq32b.detail1'),
-            t('faq.answers.models.qwq32b.detail2'),
-            t('faq.answers.models.qwq32b.detail3'),
-            t('faq.answers.models.qwq32b.detail4'),
-          ],
-        },
-        {
-          title: t('faq.answers.models.deepseek7b.title'),
-          content: t('faq.answers.models.deepseek7b.content'),
-          items: [
-            t('faq.answers.models.deepseek7b.detail1'),
-            t('faq.answers.models.deepseek7b.detail2'),
-            t('faq.answers.models.deepseek7b.detail3'),
-            t('faq.answers.models.deepseek7b.detail4'),
-          ],
-        },
-        {
-          title: t('faq.answers.models.specialized.title'),
-          content: t('faq.answers.models.specialized.content'),
-          items: [
-            t('faq.answers.models.specialized.detail1'),
-            t('faq.answers.models.specialized.detail2'),
-            t('faq.answers.models.specialized.detail3'),
-            t('faq.answers.models.specialized.detail4'),
-          ],
-        },
-      ],
-    },
-    {
-      question: t('faq.questions.parameters'),
-      answer: [
-        {
-          title: t('faq.answers.parameters.guidance_scale.title'),
-          content: t('faq.answers.parameters.guidance_scale.content'),
-          items: [
-            {
-              subtitle: t('faq.answers.parameters.guidance_scale.subtitle'),
-              details: [
-                t('faq.answers.parameters.guidance_scale.detail1'),
-                t('faq.answers.parameters.guidance_scale.detail2'),
-                t('faq.answers.parameters.guidance_scale.detail3'),
-                t('faq.answers.parameters.guidance_scale.detail4'),
-              ],
-            },
-          ],
-        },
-        {
-          title: t('faq.answers.parameters.seed.title'),
-          content: t('faq.answers.parameters.seed.content'),
-          items: [
-            {
-              subtitle: t('faq.answers.parameters.seed.subtitle'),
-              details: [
-                t('faq.answers.parameters.seed.detail1'),
-                t('faq.answers.parameters.seed.detail2'),
-                t('faq.answers.parameters.seed.detail3'),
-                t('faq.answers.parameters.seed.detail4'),
+                t("faq.answers.principle.stage2.detail1"),
+                t("faq.answers.principle.stage2.detail2"),
+                t("faq.answers.principle.stage2.detail3"),
+                t("faq.answers.principle.stage2.detail4"),
               ],
             },
           ],
@@ -396,141 +327,211 @@ export default function ComicGenerator() {
       ],
     },
     {
-      question: t('faq.questions.optimization'),
+      question: t("faq.questions.models"),
       answer: [
         {
-          title: t('faq.answers.optimization.hand.title'),
-          content: t('faq.answers.optimization.hand.content'),
+          title: t("faq.answers.models.qwq32b.title"),
+          content: t("faq.answers.models.qwq32b.content"),
           items: [
-            t('faq.answers.optimization.hand.detail1'),
-            t('faq.answers.optimization.hand.detail2'),
-            t('faq.answers.optimization.hand.detail3'),
-            t('faq.answers.optimization.hand.detail4'),
+            t("faq.answers.models.qwq32b.detail1"),
+            t("faq.answers.models.qwq32b.detail2"),
+            t("faq.answers.models.qwq32b.detail3"),
+            t("faq.answers.models.qwq32b.detail4"),
           ],
         },
         {
-          title: t('faq.answers.optimization.text.title'),
-          content: t('faq.answers.optimization.text.content'),
+          title: t("faq.answers.models.deepseek7b.title"),
+          content: t("faq.answers.models.deepseek7b.content"),
           items: [
-            t('faq.answers.optimization.text.detail1'),
-            t('faq.answers.optimization.text.detail2'),
-            t('faq.answers.optimization.text.detail3'),
-            t('faq.answers.optimization.text.detail4'),
+            t("faq.answers.models.deepseek7b.detail1"),
+            t("faq.answers.models.deepseek7b.detail2"),
+            t("faq.answers.models.deepseek7b.detail3"),
+            t("faq.answers.models.deepseek7b.detail4"),
           ],
         },
         {
-          title: t('faq.answers.optimization.character.title'),
-          content: t('faq.answers.optimization.character.content'),
+          title: t("faq.answers.models.specialized.title"),
+          content: t("faq.answers.models.specialized.content"),
           items: [
-            t('faq.answers.optimization.character.detail1'),
-            t('faq.answers.optimization.character.detail2'),
-            t('faq.answers.optimization.character.detail3'),
-            t('faq.answers.optimization.character.detail4'),
+            t("faq.answers.models.specialized.detail1"),
+            t("faq.answers.models.specialized.detail2"),
+            t("faq.answers.models.specialized.detail3"),
+            t("faq.answers.models.specialized.detail4"),
           ],
         },
       ],
     },
     {
-      question: t('faq.questions.structure'),
+      question: t("faq.questions.parameters"),
       answer: [
         {
-          title: t('faq.answers.structure.composition.title'),
-          content: t('faq.answers.structure.composition.content'),
+          title: t("faq.answers.parameters.guidance_scale.title"),
+          content: t("faq.answers.parameters.guidance_scale.content"),
           items: [
-            t('faq.answers.structure.composition.item1'),
-            t('faq.answers.structure.composition.item2'),
-            t('faq.answers.structure.composition.item3'),
-            t('faq.answers.structure.composition.item4'),
+            {
+              subtitle: t("faq.answers.parameters.guidance_scale.subtitle"),
+              details: [
+                t("faq.answers.parameters.guidance_scale.detail1"),
+                t("faq.answers.parameters.guidance_scale.detail2"),
+                t("faq.answers.parameters.guidance_scale.detail3"),
+                t("faq.answers.parameters.guidance_scale.detail4"),
+              ],
+            },
           ],
         },
         {
-          title: t('faq.answers.structure.scene.title'),
-          content: t('faq.answers.structure.scene.content'),
+          title: t("faq.answers.parameters.seed.title"),
+          content: t("faq.answers.parameters.seed.content"),
           items: [
-            t('faq.answers.structure.scene.item1'),
-            t('faq.answers.structure.scene.item2'),
-            t('faq.answers.structure.scene.item3'),
-            t('faq.answers.structure.scene.item4'),
-          ],
-        },
-        {
-          title: t('faq.answers.structure.transition.title'),
-          content: t('faq.answers.structure.transition.content'),
-          items: [
-            t('faq.answers.structure.transition.item1'),
-            t('faq.answers.structure.transition.item2'),
-            t('faq.answers.structure.transition.item3'),
-            t('faq.answers.structure.transition.item4'),
+            {
+              subtitle: t("faq.answers.parameters.seed.subtitle"),
+              details: [
+                t("faq.answers.parameters.seed.detail1"),
+                t("faq.answers.parameters.seed.detail2"),
+                t("faq.answers.parameters.seed.detail3"),
+                t("faq.answers.parameters.seed.detail4"),
+              ],
+            },
           ],
         },
       ],
     },
     {
-      question: t('faq.questions.limitations'),
+      question: t("faq.questions.optimization"),
       answer: [
         {
-          title: t('faq.answers.limitations.technical.title'),
-          content: t('faq.answers.limitations.technical.content'),
+          title: t("faq.answers.optimization.hand.title"),
+          content: t("faq.answers.optimization.hand.content"),
           items: [
-            t('faq.answers.limitations.technical.item1'),
-            t('faq.answers.limitations.technical.item2'),
-            t('faq.answers.limitations.technical.item3'),
-            t('faq.answers.limitations.technical.item4'),
+            t("faq.answers.optimization.hand.detail1"),
+            t("faq.answers.optimization.hand.detail2"),
+            t("faq.answers.optimization.hand.detail3"),
+            t("faq.answers.optimization.hand.detail4"),
           ],
         },
         {
-          title: t('faq.answers.limitations.performance.title'),
-          content: t('faq.answers.limitations.performance.content'),
+          title: t("faq.answers.optimization.text.title"),
+          content: t("faq.answers.optimization.text.content"),
           items: [
-            t('faq.answers.limitations.performance.item1'),
-            t('faq.answers.limitations.performance.item2'),
-            t('faq.answers.limitations.performance.item3'),
-            t('faq.answers.limitations.performance.item4'),
+            t("faq.answers.optimization.text.detail1"),
+            t("faq.answers.optimization.text.detail2"),
+            t("faq.answers.optimization.text.detail3"),
+            t("faq.answers.optimization.text.detail4"),
           ],
         },
         {
-          title: t('faq.answers.limitations.practices.title'),
-          content: t('faq.answers.limitations.practices.content'),
+          title: t("faq.answers.optimization.character.title"),
+          content: t("faq.answers.optimization.character.content"),
           items: [
-            t('faq.answers.limitations.practices.item1'),
-            t('faq.answers.limitations.practices.item2'),
-            t('faq.answers.limitations.practices.item3'),
-            t('faq.answers.limitations.practices.item4'),
+            t("faq.answers.optimization.character.detail1"),
+            t("faq.answers.optimization.character.detail2"),
+            t("faq.answers.optimization.character.detail3"),
+            t("faq.answers.optimization.character.detail4"),
           ],
         },
       ],
     },
     {
-      question: t('faq.questions.api_integration'),
+      question: t("faq.questions.structure"),
       answer: [
         {
-          title: t('faq.answers.api_integration.basics.title'),
-          content: t('faq.answers.api_integration.basics.content'),
+          title: t("faq.answers.structure.composition.title"),
+          content: t("faq.answers.structure.composition.content"),
           items: [
-            t('faq.answers.api_integration.basics.item1'),
-            t('faq.answers.api_integration.basics.item2'),
-            t('faq.answers.api_integration.basics.item3'),
-            t('faq.answers.api_integration.basics.item4'),
+            t("faq.answers.structure.composition.item1"),
+            t("faq.answers.structure.composition.item2"),
+            t("faq.answers.structure.composition.item3"),
+            t("faq.answers.structure.composition.item4"),
           ],
         },
         {
-          title: t('faq.answers.api_integration.endpoints.title'),
-          content: t('faq.answers.api_integration.endpoints.content'),
+          title: t("faq.answers.structure.scene.title"),
+          content: t("faq.answers.structure.scene.content"),
           items: [
-            t('faq.answers.api_integration.endpoints.item1'),
-            t('faq.answers.api_integration.endpoints.item1'),
-            t('faq.answers.api_integration.endpoints.item3'),
-            t('faq.answers.api_integration.endpoints.item4'),
+            t("faq.answers.structure.scene.item1"),
+            t("faq.answers.structure.scene.item2"),
+            t("faq.answers.structure.scene.item3"),
+            t("faq.answers.structure.scene.item4"),
           ],
         },
         {
-          title: t('faq.answers.api_integration.practices.title'),
-          content: t('faq.answers.api_integration.practices.content'),
+          title: t("faq.answers.structure.transition.title"),
+          content: t("faq.answers.structure.transition.content"),
           items: [
-            t('faq.answers.api_integration.practices.item1'),
-            t('faq.answers.api_integration.practices.item2'),
-            t('faq.answers.api_integration.practices.item3'),
-            t('faq.answers.api_integration.practices.item4'),
+            t("faq.answers.structure.transition.item1"),
+            t("faq.answers.structure.transition.item2"),
+            t("faq.answers.structure.transition.item3"),
+            t("faq.answers.structure.transition.item4"),
+          ],
+        },
+      ],
+    },
+    {
+      question: t("faq.questions.limitations"),
+      answer: [
+        {
+          title: t("faq.answers.limitations.technical.title"),
+          content: t("faq.answers.limitations.technical.content"),
+          items: [
+            t("faq.answers.limitations.technical.item1"),
+            t("faq.answers.limitations.technical.item2"),
+            t("faq.answers.limitations.technical.item3"),
+            t("faq.answers.limitations.technical.item4"),
+          ],
+        },
+        {
+          title: t("faq.answers.limitations.performance.title"),
+          content: t("faq.answers.limitations.performance.content"),
+          items: [
+            t("faq.answers.limitations.performance.item1"),
+            t("faq.answers.limitations.performance.item2"),
+            t("faq.answers.limitations.performance.item3"),
+            t("faq.answers.limitations.performance.item4"),
+          ],
+        },
+        {
+          title: t("faq.answers.limitations.practices.title"),
+          content: t("faq.answers.limitations.practices.content"),
+          items: [
+            t("faq.answers.limitations.practices.item1"),
+            t("faq.answers.limitations.practices.item2"),
+            t("faq.answers.limitations.practices.item3"),
+            t("faq.answers.limitations.practices.item4"),
+          ],
+        },
+      ],
+    },
+    {
+      question: t("faq.questions.api_integration"),
+      answer: [
+        {
+          title: t("faq.answers.api_integration.basics.title"),
+          content: t("faq.answers.api_integration.basics.content"),
+          items: [
+            t("faq.answers.api_integration.basics.item1"),
+            t("faq.answers.api_integration.basics.item2"),
+            t("faq.answers.api_integration.basics.item3"),
+            t("faq.answers.api_integration.basics.item4"),
+          ],
+        },
+        {
+          title: t("faq.answers.api_integration.endpoints.title"),
+          content: t("faq.answers.api_integration.endpoints.content"),
+          items: [
+            t("faq.answers.api_integration.endpoints.item1"),
+            t("faq.answers.api_integration.endpoints.item1"),
+            t("faq.answers.api_integration.endpoints.item3"),
+            t("faq.answers.api_integration.endpoints.item4"),
+          ],
+        },
+        {
+          title: t("faq.answers.api_integration.practices.title"),
+          content: t("faq.answers.api_integration.practices.content"),
+          items: [
+            t("faq.answers.api_integration.practices.item1"),
+            t("faq.answers.api_integration.practices.item2"),
+            t("faq.answers.api_integration.practices.item3"),
+            t("faq.answers.api_integration.practices.item4"),
           ],
         },
       ],
@@ -555,12 +556,12 @@ export default function ComicGenerator() {
     }
 
     if (ActivationService.getRemainingUses() <= 0) {
-      setError("激活码使用次数已用完，请使用新的激活码");
+      setError(t("activation.status.remaining", { count: 0 }));
       return;
     }
 
     if (!content.trim()) {
-      setError("请输入文章内容");
+      setError(t("input.label"));
       return;
     }
 
@@ -583,7 +584,7 @@ export default function ComicGenerator() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "生成漫画失败，请稍后再试");
+        throw new Error(data.error || t("generation.error"));
       }
 
       setComicPanels(data.comicPanels);
@@ -596,7 +597,7 @@ export default function ComicGenerator() {
         }
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "生成漫画时发生未知错误");
+      setError(err instanceof Error ? err.message : t("generation.error"));
       console.error("生成漫画错误:", err);
     } finally {
       setIsGenerating(false);
@@ -637,7 +638,7 @@ export default function ComicGenerator() {
       setComicPanels(data.panels);
     } catch (error: any) {
       console.error("Image generation error:", error);
-      setImageGenerationError(error.message || "图像生成失败");
+      setImageGenerationError(error.message || t("generation.error"));
     } finally {
       setIsGeneratingImages(false);
     }
@@ -689,21 +690,57 @@ export default function ComicGenerator() {
 
   // 图片风格选项
   const imageStyles = [
-    { id: "anime", name: t('styles.anime.name'), description: t('styles.anime.description'), icon: "🎌", tag: "热门" },
-    { id: "comic_book", name: t('styles.comic_book.name'), description: t('styles.comic_book.description'), icon: "💥", tag: "经典" },
-    { id: "realistic", name: t('styles.realistic.name'), description: t('styles.realistic.description'), icon: "📸", tag: "写实" },
-    { id: "cartoon", name: t('styles.cartoon.name'), description: t('styles.cartoon.description'), icon: "🎨", tag: "可爱" },
-    { id: "sketch", name: t('styles.sketch.name'), description: t('styles.sketch.description'), icon: "✏️", tag: "艺术" },
-    { id: "watercolor", name: t('styles.watercolor.name'), description: t('styles.watercolor.description'), icon: "🖌️", tag: "清新" },
+    {
+      id: "anime",
+      name: t("styles.anime.name"),
+      description: t("styles.anime.description"),
+      icon: "🎌",
+      tag: "hot",
+    },
+    {
+      id: "comic_book",
+      name: t("styles.comic_book.name"),
+      description: t("styles.comic_book.description"),
+      icon: "💥",
+      tag: "classic",
+    },
+    {
+      id: "realistic",
+      name: t("styles.realistic.name"),
+      description: t("styles.realistic.description"),
+      icon: "📸",
+      tag: "realistic",
+    },
+    {
+      id: "cartoon",
+      name: t("styles.cartoon.name"),
+      description: t("styles.cartoon.description"),
+      icon: "🎨",
+      tag: "cute",
+    },
+    {
+      id: "sketch",
+      name: t("styles.sketch.name"),
+      description: t("styles.sketch.description"),
+      icon: "✏️",
+      tag: "art",
+    },
+    {
+      id: "watercolor",
+      name: t("styles.watercolor.name"),
+      description: t("styles.watercolor.description"),
+      icon: "🖌️",
+      tag: "fresh",
+    },
   ];
 
   // 图片比例选项
   const aspectRatios = [
-    { id: "1:1", label: t('ratios.1:1.name'), value: "1:1" },
-    { id: "3:4", label: t('ratios.3:4.name'), value: "3:4" },
-    { id: "4:3", label: t('ratios.4:3.name'), value: "4:3" },
-    { id: "16:9", label: t('ratios.16:9.name'), value: "16:9" },
-    { id: "9:16", label: t('ratios.9:16.name'), value: "9:16" },
+    { id: "1:1", label: t("ratios.1:1.name"), value: "1:1" },
+    { id: "3:4", label: t("ratios.3:4.name"), value: "3:4" },
+    { id: "4:3", label: t("ratios.4:3.name"), value: "4:3" },
+    { id: "16:9", label: t("ratios.16:9.name"), value: "16:9" },
+    { id: "9:16", label: t("ratios.9:16.name"), value: "9:16" },
   ];
 
   // 激活成功回调
@@ -718,6 +755,7 @@ export default function ComicGenerator() {
     faqRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const locale = useLocale();
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-indigo-50">
       {/* 导航栏 */}
@@ -749,7 +787,7 @@ export default function ComicGenerator() {
               <BookOpen className="w-4 h-4" />
               {t("nav.guide")}
             </button>
-            <Link href="/about">
+            <Link href={`/${locale}/about`}>
               <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm text-gray-700 hover:bg-blue-50 transition-colors">
                 <Users className="w-4 h-4" />
                 {t("nav.about")}
@@ -799,7 +837,9 @@ export default function ComicGenerator() {
                         {t("activation.title")}：{activationInfo.code}
                       </p>
                       <p className="text-xs text-gray-500">
-                        {t("activation.status.remaining", { count: activationInfo.remainingUses })}
+                        {t("activation.status.remaining", {
+                          count: activationInfo.remainingUses,
+                        })}
                       </p>
                     </>
                   ) : (
@@ -832,7 +872,9 @@ export default function ComicGenerator() {
                   onClick={() => setShowActivationModal(true)}
                   className="border-blue-200 text-blue-600 hover:bg-blue-50"
                 >
-                  {activationInfo ? t('activation.button.change') : t('activation.button.activate')}
+                  {activationInfo
+                    ? t("activation.button.change")
+                    : t("activation.button.activate")}
                 </Button>
               </div>
             </div>
@@ -845,7 +887,7 @@ export default function ComicGenerator() {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <label className="text-sm font-medium text-gray-700">
-                  {t('input.label')}
+                  {t("input.label")}
                 </label>
                 <span
                   className={`text-sm ${
@@ -854,14 +896,14 @@ export default function ComicGenerator() {
                       : "text-gray-500"
                   }`}
                 >
-                  {t('input.remaining', { count: maxLength - content.length })}
+                  {t("input.remaining", { count: maxLength - content.length })}
                 </span>
               </div>
 
               <Textarea
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                placeholder={t('input.placeholder')}
+                placeholder={t("input.placeholder")}
                 className="min-h-[120px] resize-none border-blue-200 focus:border-blue-400 focus:ring-blue-400/20"
                 maxLength={maxLength}
               />
@@ -873,7 +915,7 @@ export default function ComicGenerator() {
                   onClick={fillSample}
                   className="border-blue-200 text-blue-600 hover:bg-blue-50 bg-transparent"
                 >
-                  {t('input.sample')}
+                  {t("input.sample")}
                 </Button>
               </div>
             </div>
@@ -900,22 +942,25 @@ export default function ComicGenerator() {
                     </div>
                     <div>
                       <label className="font-medium text-gray-800">
-                        {t('models.title')}
+                        {t("models.title")}
                       </label>
                       {selectedModelInfo && (
                         <div className="text-sm text-gray-500 flex items-center gap-1 mt-0.5">
-                          <span>{t('models.selected')}:</span>
+                          <span>{t("models.selected")}:</span>
                           <span className="font-medium text-blue-600">
                             {selectedModelInfo.name}
                           </span>
                           {selectedModelInfo.tag && (
                             <Badge
                               className={`ml-1.5 text-[10px] h-4 px-1.5 ${
-                                selectedModelInfo.tag === t('models.tags.recommended')
+                                selectedModelInfo.tag ===
+                                t("models.tags.recommended")
                                   ? "bg-green-100 text-green-800"
-                                  : selectedModelInfo.tag === t('models.tags.professional')
+                                  : selectedModelInfo.tag ===
+                                    t("models.tags.professional")
                                   ? "bg-indigo-100 text-indigo-800"
-                                  : selectedModelInfo.tag === t('models.tags.new')
+                                  : selectedModelInfo.tag ===
+                                    t("models.tags.new")
                                   ? "bg-orange-100 text-orange-800"
                                   : "bg-blue-100 text-blue-800"
                               }`}
@@ -968,8 +1013,9 @@ export default function ComicGenerator() {
                       ?.description && (
                       <p className="text-xs text-gray-500 mt-1">
                         {
-                          getModelCategories(t).find((c) => c.id === activeCategory)
-                            ?.description
+                          getModelCategories(t).find(
+                            (c) => c.id === activeCategory
+                          )?.description
                         }
                       </p>
                     )}
@@ -1046,11 +1092,13 @@ export default function ComicGenerator() {
                               (model) => model.category === activeCategory
                             ).length
                           }{" "}
-                          {t('models.count', { count: getTextModels(t).filter(
-                            (model) => model.category === activeCategory
-                          ).length })}
+                          {t("models.count", {
+                            count: getTextModels(t).filter(
+                              (model) => model.category === activeCategory
+                            ).length,
+                          })}
                         </span>
-                        <span>{t('models.selectHint')}</span>
+                        <span>{t("models.selectHint")}</span>
                       </div>
                     </div>
                   </div>
@@ -1061,7 +1109,7 @@ export default function ComicGenerator() {
               <div className="space-y-4">
                 <label className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
                   <ImageIcon className="w-4 h-4 text-blue-500" />
-                  {t('generation.result.sceneCount')}
+                  {t("generation.result.sceneCount")}
                 </label>
 
                 <div className="flex gap-3 flex-wrap">
@@ -1078,7 +1126,8 @@ export default function ComicGenerator() {
                           : "border-blue-200 text-blue-600 hover:bg-blue-50"
                       }`}
                     >
-                      {count}{t('generation.sceneUnit')}
+                      {count}
+                      {t("generation.sceneUnit")}
                     </Button>
                   ))}
                 </div>
@@ -1117,7 +1166,7 @@ export default function ComicGenerator() {
               <div className="space-y-4">
                 <label className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
                   <Sparkles className="w-4 h-4 text-purple-500" />
-                  {t('generation.imageStyle')}
+                  {t("generation.imageStyle")}
                 </label>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -1135,14 +1184,20 @@ export default function ComicGenerator() {
                         <div className="absolute -top-2 -right-2">
                           <Badge
                             className={`text-xs ${
-                              style.tag === "推荐"
-                                ? "bg-green-100 text-green-800"
-                                : style.tag === "新品"
-                                ? "bg-orange-100 text-orange-800"
-                                : "bg-blue-100 text-blue-800"
+                              style.tag === "hot"
+                                ? "bg-red-100 text-red-800"
+                                : style.tag === "classic"
+                                ? "bg-blue-100 text-blue-800"
+                                : style.tag === "realistic"
+                                ? "bg-indigo-100 text-indigo-800"
+                                : style.tag === "cute"
+                                ? "bg-pink-100 text-pink-800"
+                                : style.tag === "art"
+                                ? "bg-purple-100 text-purple-800"
+                                : /* fresh */ "bg-green-100 text-green-800"
                             }`}
                           >
-                            {style.tag}
+                            {t(`styleTags.${style.tag}`)}
                           </Badge>
                         </div>
                       )}
@@ -1173,7 +1228,7 @@ export default function ComicGenerator() {
                 </div>
 
                 <div className="text-xs text-gray-500 text-center">
-                  {t('generation.selectedStyle')}
+                  {t("generation.selectedStyle")}
                   <span className="font-medium text-purple-600">
                     {imageStyles.find((s) => s.id === selectedStyle)?.name}
                   </span>
@@ -1212,7 +1267,7 @@ export default function ComicGenerator() {
                           : "text-gray-700"
                       }`}
                     >
-                      {t('generation.advancedSettings')}
+                      {t("generation.advancedSettings")}
                     </span>
                   </div>
                   {showAdvancedSettings ? (
@@ -1235,13 +1290,13 @@ export default function ComicGenerator() {
                         </Label>
                       </div>
                       <p className="text-xs text-gray-500 pl-7">
-                        {t('generation.guidanceScaleDescription')}
+                        {t("generation.guidanceScaleDescription")}
                       </p>
 
                       <div className="flex flex-col space-y-2 pl-7 pr-2">
                         <div className="flex justify-between text-xs text-indigo-400 px-1">
-                          <span>{t('generation.creative')}</span>
-                          <span>{t('generation.accurate')}</span>
+                          <span>{t("generation.creative")}</span>
+                          <span>{t("generation.accurate")}</span>
                         </div>
                         <div className="bg-gradient-to-r from-indigo-50 to-indigo-100 rounded-full p-1">
                           <Slider
@@ -1276,7 +1331,7 @@ export default function ComicGenerator() {
                         </Label>
                       </div>
                       <p className="text-xs text-gray-500 pl-7">
-                        {t('generation.seedDescription')}
+                        {t("generation.seedDescription")}
                       </p>
 
                       <RadioGroup
@@ -1296,7 +1351,7 @@ export default function ComicGenerator() {
                             htmlFor="random-seed"
                             className="cursor-pointer text-sm text-indigo-700"
                           >
-                            {t('generation.random')}
+                            {t("generation.random")}
                           </Label>
                         </div>
                         <div className="flex items-center space-x-2">
@@ -1309,7 +1364,7 @@ export default function ComicGenerator() {
                             htmlFor="fixed-seed"
                             className="cursor-pointer text-sm text-indigo-700"
                           >
-                            {t('generation.fixed')}
+                            {t("generation.fixed")}
                           </Label>
                         </div>
                       </RadioGroup>
@@ -1345,12 +1400,12 @@ export default function ComicGenerator() {
             {isGenerating ? (
               <>
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2" />
-                AI智能生成中...
+                {t("generation.generatingScript")}
               </>
             ) : (
               <>
                 <Wand2 className="w-5 h-5 mr-2" />
-                {t('generation.generateScript')}
+                {t("generation.generateScript")}
               </>
             )}
           </Button>
@@ -1360,7 +1415,7 @@ export default function ComicGenerator() {
             size="lg"
             className="ml-4 px-8 py-6 text-lg font-medium rounded-md border-gray-200 text-gray-600 hover:bg-gray-50"
           >
-            探索高级功能
+            {t("hero.button.secondary")}
           </Button>
         </div>
 
@@ -1411,9 +1466,7 @@ export default function ComicGenerator() {
                 <h2 className="text-3xl font-bold text-gray-800 mb-2">
                   AI智能创作成果
                 </h2>
-                <p className="text-gray-600">
-                  {t('generation.scriptResult')}
-                </p>
+                <p className="text-gray-600">{t("generation.scriptResult")}</p>
               </div>
 
               <div className="space-y-8">
@@ -1427,7 +1480,7 @@ export default function ComicGenerator() {
                         {i + 1}
                       </div>
                       <h4 className="font-medium text-gray-800">
-                        {t('generation.scene')} {i + 1}
+                        {t("generation.scene")} {i + 1}
                       </h4>
                     </div>
 
@@ -1468,12 +1521,12 @@ export default function ComicGenerator() {
                             onClick={() =>
                               handleDownloadImage(
                                 panel.imageUrl,
-                                `${t('generation.scene')}${i + 1}`
+                                `${t("generation.scene")}${i + 1}`
                               )
                             }
                           >
                             <Download className="w-3 h-3 mr-1" />
-                            {t('generation.downloadImage')}
+                            {t("generation.downloadImage")}
                           </Button>
                         </div>
                       )}
@@ -1492,8 +1545,9 @@ export default function ComicGenerator() {
                           模型:{" "}
                           <span className="font-medium text-purple-600">
                             {
-                              getTextModels(t).find((m) => m.id === selectedModel)
-                                ?.name
+                              getTextModels(t).find(
+                                (m) => m.id === selectedModel
+                              )?.name
                             }
                           </span>
                         </span>
@@ -1523,7 +1577,9 @@ export default function ComicGenerator() {
                             <span>
                               种子数:{" "}
                               <span className="font-medium text-purple-600">
-                                {seedMode === "random" ? "随机" : seedValue}
+                                {seedMode === "random"
+                                  ? t("settings.advanced.seed.random")
+                                  : seedValue}
                               </span>
                             </span>
                           </div>
@@ -1552,19 +1608,19 @@ export default function ComicGenerator() {
                     {isGeneratingImages ? (
                       <>
                         <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2" />
-                        {t('generation.renderingImages')}...
+                        {t("generation.renderingImages")}...
                       </>
                     ) : (
                       <>
                         <ImageIcon className="w-5 h-5 mr-2" />
-                        {t('generation.renderHDComic')}
+                        {t("generation.renderHDComic")}
                       </>
                     )}
                   </Button>
                   <p className="text-sm text-gray-500 mt-2">
                     {isGeneratingImages
-                      ? t('generation.renderingComic')
-                      : t('generation.willGenerateComic')}
+                      ? t("generation.renderingComic")
+                      : t("generation.willGenerateComic")}
                   </p>
                 </div>
               </div>
@@ -1579,7 +1635,7 @@ export default function ComicGenerator() {
                       className="text-gray-600 hover:text-pink-600"
                     >
                       <Heart className="w-4 h-4 mr-1" />
-                      {t('common.like')}
+                      {t("common.like")}
                     </Button>
                     <Button
                       variant="ghost"
@@ -1587,7 +1643,7 @@ export default function ComicGenerator() {
                       className="text-gray-600 hover:text-pink-600"
                     >
                       <MessageCircle className="w-4 h-4 mr-1" />
-                      {t('common.comment')}
+                      {t("common.comment")}
                     </Button>
                     <Button
                       variant="ghost"
@@ -1595,14 +1651,14 @@ export default function ComicGenerator() {
                       className="text-gray-600 hover:text-pink-600"
                     >
                       <Share className="w-4 h-4 mr-1" />
-                      {t('common.share')}
+                      {t("common.share")}
                     </Button>
                   </div>
                   <Badge
                     variant="secondary"
                     className="bg-green-100 text-green-700"
                   >
-                    {t('common.success')}
+                    {t("common.success")}
                   </Badge>
                 </div>
               </div>
@@ -1615,12 +1671,8 @@ export default function ComicGenerator() {
       <div ref={faqRef} className="mt-16 pt-8 border-t border-blue-100">
         {/* FAQ标题优化 */}
         <div className="text-center mb-10">
-          <h2 className="text-3xl font-bold mb-4">
-            {t('faq.title')}
-          </h2>
-          <p className="text-gray-600">
-            {t('faq.subtitle')}
-          </p>
+          <h2 className="text-3xl font-bold mb-4">{t("faq.title")}</h2>
+          <p className="text-gray-600">{t("faq.subtitle")}</p>
         </div>
 
         <div className="space-y-4 mb-8 max-w-3xl mx-auto">
@@ -1647,58 +1699,81 @@ export default function ComicGenerator() {
 
               {activeAccordion === index && (
                 <div className="p-4 pt-0 border-t border-blue-50 bg-gradient-to-br from-blue-50/30 to-indigo-50/30">
-                  {faq.answer.map((section: FAQItem['answer'][0], sectionIndex: number) => (
-                    <div key={sectionIndex} className="mb-6 last:mb-0">
-                      <h4 className="text-lg font-semibold text-gray-800 mb-2">
-                        {section.title}
-                      </h4>
-                      <p className="text-gray-600 mb-3">{section.content}</p>
+                  {faq.answer.map(
+                    (section: FAQItem["answer"][0], sectionIndex: number) => (
+                      <div key={sectionIndex} className="mb-6 last:mb-0">
+                        <h4 className="text-lg font-semibold text-gray-800 mb-2">
+                          {section.title}
+                        </h4>
+                        <p className="text-gray-600 mb-3">{section.content}</p>
 
-                      {Array.isArray(section.items) &&
-                      section.items.some((item) => typeof item === "object") ? (
-                        // 处理包含子标题的项目
-                         <div className="space-y-4">
-                           {section.items.map((item: string | { subtitle: string; details: string[] }, itemIndex: number) => {
-                            if (
-                              typeof item === "object" &&
-                              "subtitle" in item
-                            ) {
-                              return (
-                                <div key={itemIndex} className="pl-4">
-                                  <h5 className="text-sm font-medium text-gray-700 mb-2">
-                                    {item.subtitle}
-                                  </h5>
-                                   <ul className="list-disc list-inside space-y-1">
-                                     {item.details.map((detail: string, detailIndex: number) => (
-                                      <li
-                                        key={detailIndex}
-                                        className="text-gray-600 text-sm"
-                                      >
-                                        {detail}
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              );
-                            }
-                            return null;
-                          })}
-                        </div>
-                      ) : (
-                        // 处理普通列表项
-                         <ul className="list-disc list-inside space-y-1 pl-4">
-                           {section.items.map((item: string | { subtitle: string; details: string[] }, itemIndex: number) => (
-                            <li
-                              key={itemIndex}
-                              className="text-gray-600 text-sm"
-                            >
-                              {typeof item === "string" ? item : null}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                  ))}
+                        {Array.isArray(section.items) &&
+                        section.items.some(
+                          (item) => typeof item === "object"
+                        ) ? (
+                          // 处理包含子标题的项目
+                          <div className="space-y-4">
+                            {section.items.map(
+                              (
+                                item:
+                                  | string
+                                  | { subtitle: string; details: string[] },
+                                itemIndex: number
+                              ) => {
+                                if (
+                                  typeof item === "object" &&
+                                  "subtitle" in item
+                                ) {
+                                  return (
+                                    <div key={itemIndex} className="pl-4">
+                                      <h5 className="text-sm font-medium text-gray-700 mb-2">
+                                        {item.subtitle}
+                                      </h5>
+                                      <ul className="list-disc list-inside space-y-1">
+                                        {item.details.map(
+                                          (
+                                            detail: string,
+                                            detailIndex: number
+                                          ) => (
+                                            <li
+                                              key={detailIndex}
+                                              className="text-gray-600 text-sm"
+                                            >
+                                              {detail}
+                                            </li>
+                                          )
+                                        )}
+                                      </ul>
+                                    </div>
+                                  );
+                                }
+                                return null;
+                              }
+                            )}
+                          </div>
+                        ) : (
+                          // 处理普通列表项
+                          <ul className="list-disc list-inside space-y-1 pl-4">
+                            {section.items.map(
+                              (
+                                item:
+                                  | string
+                                  | { subtitle: string; details: string[] },
+                                itemIndex: number
+                              ) => (
+                                <li
+                                  key={itemIndex}
+                                  className="text-gray-600 text-sm"
+                                >
+                                  {typeof item === "string" ? item : null}
+                                </li>
+                              )
+                            )}
+                          </ul>
+                        )}
+                      </div>
+                    )
+                  )}
                 </div>
               )}
             </div>
@@ -1714,11 +1789,11 @@ export default function ComicGenerator() {
               <div className="w-8 h-8 bg-white/20 rounded-md flex items-center justify-center">
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
-              <span className="font-bold text-xl">{t('common.appName')}</span>
+              <span className="font-bold text-xl">{t("common.appName")}</span>
             </div>
 
             <p className="text-indigo-200 text-sm">
-              © {new Date().getFullYear()} {t('common.copyright')}
+              © {new Date().getFullYear()} {t("common.copyright")}
             </p>
           </div>
         </div>
