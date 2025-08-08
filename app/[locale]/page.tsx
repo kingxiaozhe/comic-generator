@@ -35,6 +35,11 @@ import {
   BookOpen,
   Users,
   Key,
+  ClipboardCopy,
+  Loader2,
+  Copy,
+  XCircle,
+  RefreshCw,
 } from "lucide-react";
 import { ComicPanel } from "@/lib/types";
 import { ActivationModal } from "@/components/ActivationModal";
@@ -44,6 +49,17 @@ import Link from "next/link";
 import { useLocale } from "next-intl";
 import LanguageSwitcher from "@/components/language-switcher";
 import { useTranslations } from "next-intl";
+import { TemplateSelector } from "@/components/TemplateSelector";
+import { getPromptTemplate } from "@/lib/prompts";
+import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { AdvancedSettings } from "@/components/AdvancedSettings";
 
 // 图片比例选项
 type AspectRatio = {
@@ -182,6 +198,70 @@ type ImageStyle = {
 
 // 图片风格数据将在函数内部定义
 
+// 自定义提示词配置
+const buildCustomPrompt = (
+  templateName: string,
+  sceneCount: number,
+  imageStyle: string
+) => {
+  const template = getPromptTemplate(templateName);
+  return `
+[创作设定]
+- 总场景数：${sceneCount}张
+- 图片风格：${imageStyle}
+- 创作模板：${template.name}
+
+[角色定位]
+${template.commonIntro}
+
+[创作理念]
+${template.core}
+
+[创作规范]
+${template.outputRulesCommon}
+
+[图片风格要求]
+请在创作时特别注意以下风格要求：
+1. 画面整体风格：${imageStyle}
+2. 每个场景都要体现选定的风格特点
+3. 构图和光影要符合${imageStyle}的特点
+4. 人物表现要符合${imageStyle}的风格
+
+[质量要求]
+${template.qaChecklist}
+
+[用户内容开始]
+`;
+};
+
+interface GeneratedImage {
+  url: string;
+  index: number;
+  variant?: number;
+  generation_time?: string;
+}
+
+interface APISuccessResponse {
+  success: boolean;
+  images: Array<{
+    url: string;
+    index: number;
+    generation_time: string;
+  }>;
+  metadata?: {
+    prompt: string;
+    timestamp: string;
+  };
+}
+
+interface APIErrorResponse {
+  error: string;
+  details?: string;
+  timestamp?: string;
+}
+
+type APIResponse = APISuccessResponse | APIErrorResponse;
+
 export default function ComicGenerator() {
   const t = useTranslations();
   const [content, setContent] = useState("");
@@ -203,6 +283,21 @@ export default function ComicGenerator() {
   const [activeAccordion, setActiveAccordion] = useState<number | null>(null);
   const faqRef = useRef<HTMLDivElement>(null);
   const homeRef = useRef<HTMLDivElement>(null);
+  const [templateName, setTemplateName] = useState("comicMaster");
+  const [imageStyle, setImageStyle] = useState("写实风格"); // 添加图片风格状态
+  const [scriptContent, setScriptContent] = useState(""); // 添加整体剧本内容状态
+  const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
+
+  // 高级设置状态
+  const [steps, setSteps] = useState(40);
+  const [samplingMethod, setSamplingMethod] = useState("euler_a");
+  const [styleStrength, setStyleStrength] = useState(0.8);
+  const [negativePrompt, setNegativePrompt] = useState("");
+  const [clarity, setClarity] = useState(0.5);
+  const [saturation, setSaturation] = useState(0.5);
+  const [composition, setComposition] = useState("balanced");
+  const [samplesPerScene, setSamplesPerScene] = useState(1);
+  const [variationAmount, setVariationAmount] = useState(0.3);
 
   // 添加激活码相关状态
   const [showActivationModal, setShowActivationModal] = useState(false);
@@ -547,6 +642,16 @@ export default function ComicGenerator() {
 
   const sampleArticle = `春天来了，小明走在回家的路上。突然，他发现路边有一只受伤的小猫。小明毫不犹豫地将小猫抱起，送到了附近的宠物医院。医生说小猫只是轻微擦伤，很快就能康复。从那天起，小明每天都会去医院看望小猫，直到它完全康复。`;
 
+  // 组装完整内容
+  const buildFullContent = (userContent: string) => {
+    const prompt = buildCustomPrompt(templateName, selectedCount, imageStyle);
+    return `
+        ${prompt}
+        ${userContent}
+        [用户内容结束]
+    `;
+  };
+
   // 修改handleGenerate函数，添加激活码检查
   const handleGenerate = async () => {
     // 检查激活码
@@ -568,6 +673,8 @@ export default function ComicGenerator() {
     setIsGenerating(true);
     setError(null);
 
+    console.log(`content=>${buildFullContent(content)}`);
+
     try {
       const response = await fetch("/api/generate", {
         method: "POST",
@@ -575,9 +682,10 @@ export default function ComicGenerator() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          content,
+          content: buildFullContent(content),
           count: selectedCount,
           model: selectedModel, // 添加模型参数
+          templateName, // 添加模板名称
         }),
       });
 
@@ -587,7 +695,18 @@ export default function ComicGenerator() {
         throw new Error(data.error || t("generation.error"));
       }
 
-      setComicPanels(data.comicPanels);
+      // 将所有场景内容合并成一个整体
+      if (Array.isArray(data.comicPanels)) {
+        const fullScript = data.comicPanels
+          .sort(
+            (a: ComicPanel, b: ComicPanel) =>
+              (a.sceneNumber || 0) - (b.sceneNumber || 0)
+          )
+          .map((panel: ComicPanel) => panel.content)
+          .join("\n\n");
+
+        setScriptContent(fullScript);
+      }
 
       // 使用一次激活码
       if (ActivationService.useOnce()) {
@@ -604,56 +723,163 @@ export default function ComicGenerator() {
     }
   };
 
-  // 在handleGenerateImages函数中使用aspectRatio
+  // 处理生成图片
   const handleGenerateImages = async () => {
-    if (comicPanels.length === 0) return;
+    if (!scriptContent) {
+      setImageGenerationError("请先生成剧本内容");
+      return;
+    }
 
     setIsGeneratingImages(true);
     setImageGenerationError(null);
 
     try {
-      const response = await fetch("/api/generate-images", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          panels: comicPanels,
-          aspectRatio, // 使用aspectRatio替代selectedAspectRatio
-          seed: seedMode === "random" ? -1 : seedValue,
-          guidanceScale,
-          style: selectedStyle, // 添加风格参数
-        }),
-      });
+      // 从剧本中提取场景
+      const sceneRegex = /场景：([\s\S]*?)(?=场景：|$)/g;
+      let match;
+      const scenes = [];
+      let sceneNumber = 1;
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      // 提取所有"场景："开头的部分
+      while ((match = sceneRegex.exec(scriptContent)) !== null) {
+        const fullSceneContent = match[0].trim();
+        if (fullSceneContent) {
+          scenes.push({
+            number: sceneNumber++,
+            content: fullSceneContent,
+          });
+        }
       }
 
-      const data = await response.json();
-      if (data.error) {
-        throw new Error(data.error);
+      // 如果没有找到场景，尝试按段落分割
+      if (scenes.length === 0) {
+        const paragraphs = scriptContent
+          .split(/\n\s*\n/)
+          .filter((p) => p.trim())
+          .map((p, idx) => ({
+            number: idx + 1,
+            content: p.trim(),
+          }));
+
+        if (paragraphs.length > 0) {
+          scenes.push(...paragraphs);
+        }
       }
 
-      setComicPanels(data.panels);
+      console.log(`从剧本中提取了 ${scenes.length} 个场景:`, scenes);
+
+      if (scenes.length === 0) {
+        throw new Error("无法从剧本中提取场景，请检查剧本格式");
+      }
+
+      const allImages: GeneratedImage[] = [];
+
+      // 为每个场景生成图片
+      for (const scene of scenes) {
+        const sceneNumber = scene.number;
+        const sceneContent = scene.content;
+
+        console.log(`处理场景 ${sceneNumber}:`, {
+          content: sceneContent.substring(0, 100) + "...",
+          style: imageStyle,
+        });
+
+        const response = await fetch("/api/generate-images", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            script: sceneContent,
+            style: imageStyle,
+            steps,
+            samplingMethod,
+            styleStrength,
+            negativePrompt,
+            clarity,
+            saturation,
+            composition,
+            samplesPerScene: 2,
+            variationAmount,
+          }),
+        });
+
+        const data = (await response.json()) as APIResponse;
+
+        if (!response.ok) {
+          console.error(`场景 ${sceneNumber} 生成失败:`, data);
+          const errorData = data as APIErrorResponse;
+          throw new Error(
+            errorData.error ||
+              errorData.details ||
+              `场景 ${sceneNumber} 生成失败`
+          );
+        }
+
+        const successData = data as APISuccessResponse;
+        if (!successData.images || !Array.isArray(successData.images)) {
+          throw new Error(`场景 ${sceneNumber} 返回数据格式错误`);
+        }
+
+        // 为每个图片添加场景编号
+        const sceneImages = successData.images.map(
+          (img: GeneratedImage, idx: number) => ({
+            ...img,
+            index: sceneNumber,
+            variant: idx + 1,
+          })
+        );
+
+        allImages.push(...sceneImages);
+        console.log(
+          `场景 ${sceneNumber} 生成完成，获得 ${sceneImages.length} 张图片`
+        );
+      }
+
+      // 按场景编号排序
+      allImages.sort((a, b) => a.index - b.index);
+
+      console.log(`所有场景生成完成，共 ${allImages.length} 张图片`);
+      setGeneratedImages(allImages);
     } catch (error: any) {
-      console.error("Image generation error:", error);
-      setImageGenerationError(error.message || t("generation.error"));
+      console.error("图片生成错误:", error);
+      setImageGenerationError(
+        error.message || "生成图片时发生错误，请检查网络连接或稍后重试"
+      );
     } finally {
       setIsGeneratingImages(false);
     }
   };
 
-  const handleDownloadImage = (
-    imageUrl: string | undefined,
-    sceneName: string
-  ) => {
-    if (!imageUrl) return;
+  // 格式化文件名
+  const formatFileName = (index: number, style: string) => {
+    const date = new Date().toISOString().split("T")[0];
+    return `AI漫画_${style}_场景${index}_${date}.png`;
+  };
 
-    const a = document.createElement("a");
-    a.href = imageUrl;
-    a.download = `漫画场景_${sceneName}.jpg`;
-    a.click();
+  // 下载单张图片
+  const handleDownloadImage = async (image: GeneratedImage) => {
+    try {
+      const link = document.createElement("a");
+      link.href = image.url;
+      link.download = formatFileName(image.index, imageStyle);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast.success(`场景 ${image.index} 下载成功`);
+    } catch (error) {
+      toast.error(`下载失败: ${error}`);
+    }
+  };
+
+  // 下载所有图片
+  const handleDownloadAll = async () => {
+    toast.info(`开始下载 ${generatedImages.length} 张图片...`);
+
+    generatedImages.forEach((image, idx) => {
+      setTimeout(() => {
+        handleDownloadImage(image);
+      }, idx * 800); // 增加延迟时间，避免浏览器阻止
+    });
   };
 
   const fillSample = () => {
@@ -881,543 +1107,261 @@ export default function ComicGenerator() {
           </CardContent>
         </Card>
 
-        {/* Input Section */}
-        <Card className="mb-8 border border-blue-100 shadow-md bg-white/90 backdrop-blur-sm">
-          <CardContent className="p-6">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-gray-700">
-                  {t("input.label")}
-                </label>
-                <span
-                  className={`text-sm ${
-                    content.length > maxLength
-                      ? "text-red-500"
-                      : "text-gray-500"
-                  }`}
-                >
-                  {t("input.remaining", { count: maxLength - content.length })}
-                </span>
-              </div>
-
-              <Textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder={t("input.placeholder")}
-                className="min-h-[120px] resize-none border-blue-200 focus:border-blue-400 focus:ring-blue-400/20"
-                maxLength={maxLength}
-              />
-
-              <div className="flex justify-start">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={fillSample}
-                  className="border-blue-200 text-blue-600 hover:bg-blue-50 bg-transparent"
-                >
-                  {t("input.sample")}
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Configuration Section */}
         <Card className="mb-8 border border-blue-100 shadow-md bg-white/90 backdrop-blur-sm">
           <CardContent className="p-6">
-            <div className="space-y-6">
-              {/* 文本生成模型选择 - 折叠式设计 */}
-              <div>
-                {/* 模型选择器标题与折叠按钮 */}
-                <button
-                  type="button"
-                  onClick={() =>
-                    setIsModelSectionExpanded(!isModelSectionExpanded)
-                  }
-                  className="w-full flex items-center justify-between cursor-pointer rounded-xl p-4 transition-all duration-200 hover:bg-blue-50/50 text-left"
-                >
-                  <div className="flex items-center gap-2">
-                    <div className="rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 p-1.5">
-                      <Sparkles className="w-4 h-4 text-white" />
-                    </div>
-                    <div>
-                      <label className="font-medium text-gray-800">
-                        {t("models.title")}
-                      </label>
-                      {selectedModelInfo && (
-                        <div className="text-sm text-gray-500 flex items-center gap-1 mt-0.5">
-                          <span>{t("models.selected")}:</span>
-                          <span className="font-medium text-blue-600">
-                            {selectedModelInfo.name}
-                          </span>
-                          {selectedModelInfo.tag && (
-                            <Badge
-                              className={`ml-1.5 text-[10px] h-4 px-1.5 ${
-                                selectedModelInfo.tag ===
-                                t("models.tags.recommended")
-                                  ? "bg-green-100 text-green-800"
-                                  : selectedModelInfo.tag ===
-                                    t("models.tags.professional")
-                                  ? "bg-indigo-100 text-indigo-800"
-                                  : selectedModelInfo.tag ===
-                                    t("models.tags.new")
-                                  ? "bg-orange-100 text-orange-800"
-                                  : "bg-blue-100 text-blue-800"
-                              }`}
-                            >
-                              {selectedModelInfo.tag}
-                            </Badge>
-                          )}
-                        </div>
-                      )}
-                    </div>
+            {/* 添加引导说明 */}
+            <div className="mb-8 p-4 bg-blue-50 rounded-lg">
+              <p className="text-sm text-blue-600">
+                先选择合适的创作风格和图片风格，然后在下方输入你的创意内容，AI将为你生成精彩的漫画剧本。
+              </p>
+            </div>
+
+            <div className="space-y-8">
+              {/* 创作设置区域 */}
+              <div className="space-y-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-medium">
+                    1
                   </div>
-                  <div className="text-gray-500">
-                    {isModelSectionExpanded ? (
-                      <ChevronUp className="w-5 h-5" />
-                    ) : (
-                      <ChevronDown className="w-5 h-5" />
-                    )}
+                  <h3 className="text-lg font-medium text-gray-800">
+                    创作设置
+                  </h3>
+                </div>
+
+                {/* 模板选择 */}
+                <div className="space-y-4">
+                  <Label>选择创作风格</Label>
+                  <TemplateSelector
+                    value={templateName}
+                    onChange={setTemplateName}
+                  />
+                </div>
+
+                {/* 图片风格选择 */}
+                <div className="space-y-4">
+                  <Label>选择图片风格</Label>
+                  <Select value={imageStyle} onValueChange={setImageStyle}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="选择图片风格" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="写实风格">写实风格</SelectItem>
+                      <SelectItem value="水彩风格">水彩风格</SelectItem>
+                      <SelectItem value="油画风格">油画风格</SelectItem>
+                      <SelectItem value="素描风格">素描风格</SelectItem>
+                      <SelectItem value="动漫风格">动漫风格</SelectItem>
+                      <SelectItem value="赛博朋克">赛博朋克</SelectItem>
+                      <SelectItem value="未来主义">未来主义</SelectItem>
+                      <SelectItem value="极简主义">极简主义</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* 高级设置 */}
+                <AdvancedSettings
+                  settings={{
+                    steps: steps,
+                    samplingMethod: samplingMethod,
+                    styleStrength: styleStrength,
+                    negativePrompt: negativePrompt,
+                    clarity: clarity,
+                    saturation: saturation,
+                    composition: composition,
+                    samplesPerScene: samplesPerScene,
+                    variationAmount: variationAmount,
+                  }}
+                  onChange={(key, value) => {
+                    switch (key) {
+                      case "steps":
+                        setSteps(value);
+                        break;
+                      case "samplingMethod":
+                        setSamplingMethod(value);
+                        break;
+                      case "styleStrength":
+                        setStyleStrength(value);
+                        break;
+                      case "negativePrompt":
+                        setNegativePrompt(value);
+                        break;
+                      case "clarity":
+                        setClarity(value);
+                        break;
+                      case "saturation":
+                        setSaturation(value);
+                        break;
+                      case "composition":
+                        setComposition(value);
+                        break;
+                      case "samplesPerScene":
+                        setSamplesPerScene(value);
+                        break;
+                      case "variationAmount":
+                        setVariationAmount(value);
+                        break;
+                    }
+                  }}
+                />
+              </div>
+
+              {/* 内容创作区域 */}
+              <div className="space-y-6 pt-4 border-t border-gray-100">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-medium">
+                    2
                   </div>
-                </button>
-
-                {/* 展开后的完整模型选择区域 */}
-                {isModelSectionExpanded && (
-                  <div className="mt-2 pt-4 border-t border-gray-100 space-y-4 animate-in fade-in slide-in-from-top duration-300">
-                    {/* 模型分类选择器 */}
-                    <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
-                      {getModelCategories(t).map((category) => (
-                        <button
-                          key={category.id}
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation(); // 防止冒泡触发折叠
-                            setActiveCategory(category.id);
-                          }}
-                          className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap transition-all duration-200 ${
-                            activeCategory === category.id
-                              ? "bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-sm"
-                              : "bg-white text-gray-700 hover:bg-blue-50"
-                          }`}
-                        >
-                          {activeCategory === category.id && (
-                            <div className="w-2 h-2 rounded-full bg-white"></div>
-                          )}
-                          {category.name}
-                        </button>
-                      ))}
-                    </div>
-
-                    {/* 当前分类描述 */}
-                    {getModelCategories(t).find((c) => c.id === activeCategory)
-                      ?.description && (
-                      <p className="text-xs text-gray-500 mt-1">
-                        {
-                          getModelCategories(t).find(
-                            (c) => c.id === activeCategory
-                          )?.description
-                        }
-                      </p>
-                    )}
-
-                    {/* 模型列表 - 根据分类过滤 */}
-                    <div className="space-y-4 mt-2">
-                      <div className="h-[280px] overflow-y-auto pr-2 custom-scrollbar">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                          {getTextModels(t)
-                            .filter(
-                              (model) => model.category === activeCategory
-                            )
-                            .map((model) => (
-                              <div
-                                key={model.id}
-                                onClick={(e) => {
-                                  e.stopPropagation(); // 防止冒泡触发折叠
-                                  setSelectedModel(model.id);
-                                }}
-                                className={`relative p-4 rounded-xl cursor-pointer transition-all duration-200 border ${
-                                  selectedModel === model.id
-                                    ? "border-purple-400 bg-gradient-to-br from-purple-50 to-indigo-50 shadow-sm"
-                                    : "border-gray-100 hover:border-purple-200 bg-white/80 hover:bg-white"
-                                }`}
-                              >
-                                <div className="flex items-center gap-2">
-                                  <div
-                                    className={`rounded-full p-1 ${
-                                      selectedModel === model.id
-                                        ? "bg-gradient-to-r from-purple-500 to-indigo-500"
-                                        : "bg-gray-100"
-                                    }`}
-                                  >
-                                    <Sparkles
-                                      className={`w-3.5 h-3.5 ${
-                                        selectedModel === model.id
-                                          ? "text-white"
-                                          : "text-gray-500"
-                                      }`}
-                                    />
-                                  </div>
-                                  <span
-                                    className={`font-medium ${
-                                      selectedModel === model.id
-                                        ? "text-purple-700"
-                                        : "text-gray-700"
-                                    }`}
-                                  >
-                                    {model.name}
-                                  </span>
-
-                                  {/* 显示选中标记 */}
-                                  {selectedModel === model.id && (
-                                    <div className="ml-auto">
-                                      <Check className="w-4 h-4 text-purple-500" />
-                                    </div>
-                                  )}
-                                </div>
-
-                                <p className="text-xs text-gray-500 mt-2 pl-6">
-                                  {model.description}
-                                </p>
-                              </div>
-                            ))}
-                        </div>
-                      </div>
-
-                      {/* 模型数量和选择提示 */}
-                      <div className="text-xs text-gray-500 flex justify-between">
-                        <span>
-                          当前分类共{" "}
-                          {
-                            getTextModels(t).filter(
-                              (model) => model.category === activeCategory
-                            ).length
-                          }{" "}
-                          {t("models.count", {
-                            count: getTextModels(t).filter(
-                              (model) => model.category === activeCategory
-                            ).length,
-                          })}
-                        </span>
-                        <span>{t("models.selectHint")}</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* 场景数量选择 */}
-              <div className="space-y-4">
-                <label className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
-                  <ImageIcon className="w-4 h-4 text-blue-500" />
-                  {t("generation.result.sceneCount")}
-                </label>
-
-                <div className="flex gap-3 flex-wrap">
-                  {[2, 4, 6, 8].map((count) => (
-                    <Button
-                      key={count}
-                      type="button"
-                      variant={selectedCount === count ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setSelectedCount(count)}
-                      className={`rounded-full px-6 ${
-                        selectedCount === count
-                          ? "bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
-                          : "border-blue-200 text-blue-600 hover:bg-blue-50"
-                      }`}
-                    >
-                      {count}
-                      {t("generation.sceneUnit")}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-
-              {/* 图片比例选择 */}
-              <div className="space-y-4">
-                <label className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
-                  <SlidersHorizontal className="w-4 h-4 text-blue-500" />
-                  图片比例
-                </label>
-
-                <div className="flex gap-3 flex-wrap">
-                  {aspectRatios.map((ratio) => (
-                    <Button
-                      key={ratio.id}
-                      type="button"
-                      variant={
-                        aspectRatio === ratio.value ? "default" : "outline"
-                      }
-                      size="sm"
-                      onClick={() => handleAspectRatioChange(ratio.value)}
-                      className={`rounded-full px-4 ${
-                        aspectRatio === ratio.value
-                          ? "bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
-                          : "border-blue-200 text-blue-600 hover:bg-blue-50"
-                      }`}
-                    >
-                      {ratio.label}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-
-              {/* 图片风格选择 */}
-              <div className="space-y-4">
-                <label className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
-                  <Sparkles className="w-4 h-4 text-purple-500" />
-                  {t("generation.imageStyle")}
-                </label>
-
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {imageStyles.map((style) => (
-                    <div
-                      key={style.id}
-                      onClick={() => setSelectedStyle(style.id)}
-                      className={`relative p-4 rounded-xl cursor-pointer transition-all duration-200 border ${
-                        selectedStyle === style.id
-                          ? "border-purple-400 bg-gradient-to-br from-purple-50 to-indigo-50 shadow-sm"
-                          : "border-gray-200 hover:border-purple-200 bg-white hover:bg-purple-50/30"
-                      }`}
-                    >
-                      {style.tag && (
-                        <div className="absolute -top-2 -right-2">
-                          <Badge
-                            className={`text-xs ${
-                              style.tag === "hot"
-                                ? "bg-red-100 text-red-800"
-                                : style.tag === "classic"
-                                ? "bg-blue-100 text-blue-800"
-                                : style.tag === "realistic"
-                                ? "bg-indigo-100 text-indigo-800"
-                                : style.tag === "cute"
-                                ? "bg-pink-100 text-pink-800"
-                                : style.tag === "art"
-                                ? "bg-purple-100 text-purple-800"
-                                : /* fresh */ "bg-green-100 text-green-800"
-                            }`}
-                          >
-                            {t(`styleTags.${style.tag}`)}
-                          </Badge>
-                        </div>
-                      )}
-
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className="text-2xl">{style.icon}</span>
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={`font-medium text-sm ${
-                              selectedStyle === style.id
-                                ? "text-purple-700"
-                                : "text-gray-700"
-                            }`}
-                          >
-                            {style.name}
-                          </span>
-                          {selectedStyle === style.id && (
-                            <Check className="w-4 h-4 text-purple-500" />
-                          )}
-                        </div>
-                      </div>
-
-                      <p className="text-xs text-gray-500 leading-relaxed">
-                        {style.description}
-                      </p>
-                    </div>
-                  ))}
+                  <h3 className="text-lg font-medium text-gray-800">
+                    内容创作
+                  </h3>
                 </div>
 
-                <div className="text-xs text-gray-500 text-center">
-                  {t("generation.selectedStyle")}
-                  <span className="font-medium text-purple-600">
-                    {imageStyles.find((s) => s.id === selectedStyle)?.name}
-                  </span>
-                </div>
-              </div>
-
-              {/* 高级设置部分 */}
-              <div className="mt-2">
-                <button
-                  type="button"
-                  className={`w-full flex items-center justify-between p-4 text-left rounded-xl transition-all duration-200 ${
-                    showAdvancedSettings
-                      ? "bg-gradient-to-r from-blue-50 to-indigo-50 shadow-sm"
-                      : "bg-white/50 hover:bg-blue-50/80"
-                  }`}
-                  onClick={() => setShowAdvancedSettings(!showAdvancedSettings)}
-                >
-                  <div className="flex items-center gap-2">
-                    <div
-                      className={`rounded-full p-1.5 ${
-                        showAdvancedSettings
-                          ? "bg-gradient-to-r from-blue-500 to-indigo-500"
-                          : "bg-gray-100"
-                      }`}
-                    >
-                      <Sliders
-                        className={`w-4 h-4 ${
-                          showAdvancedSettings ? "text-white" : "text-gray-500"
-                        }`}
-                      />
-                    </div>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium text-gray-700">
+                      输入你的创意内容
+                    </label>
                     <span
-                      className={`font-medium ${
-                        showAdvancedSettings
-                          ? "text-indigo-700"
-                          : "text-gray-700"
+                      className={`text-sm ${
+                        content.length > maxLength
+                          ? "text-red-500"
+                          : "text-gray-500"
                       }`}
                     >
-                      {t("generation.advancedSettings")}
+                      {t("input.remaining", {
+                        count: maxLength - content.length,
+                      })}
                     </span>
                   </div>
-                  {showAdvancedSettings ? (
-                    <ChevronDown className="w-5 h-5 text-indigo-500" />
-                  ) : (
-                    <ChevronRight className="w-5 h-5 text-gray-400" />
-                  )}
-                </button>
 
-                {showAdvancedSettings && (
-                  <div className="mt-4 pt-2 pb-1 px-4 bg-white/60 backdrop-blur-sm rounded-xl border border-indigo-100 shadow-sm space-y-6 transition-all duration-300 ease-in-out">
-                    {/* 文本权重设置 */}
-                    <div className="space-y-3 py-3 border-b border-indigo-50">
-                      <div className="flex items-center gap-2">
-                        <div className="rounded-full bg-gradient-to-r from-indigo-400 to-purple-400 p-1.5">
-                          <SlidersHorizontal className="w-3.5 h-3.5 text-white" />
-                        </div>
-                        <Label className="text-sm font-medium text-indigo-800">
-                          文本权重
-                        </Label>
-                      </div>
-                      <p className="text-xs text-gray-500 pl-7">
-                        {t("generation.guidanceScaleDescription")}
-                      </p>
+                  <Textarea
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    placeholder="请在这里输入你想要转换成漫画的故事或创意..."
+                    className="min-h-[120px] resize-none border-blue-200 focus:border-blue-400 focus:ring-blue-400/20"
+                    maxLength={maxLength}
+                  />
 
-                      <div className="flex flex-col space-y-2 pl-7 pr-2">
-                        <div className="flex justify-between text-xs text-indigo-400 px-1">
-                          <span>{t("generation.creative")}</span>
-                          <span>{t("generation.accurate")}</span>
-                        </div>
-                        <div className="bg-gradient-to-r from-indigo-50 to-indigo-100 rounded-full p-1">
-                          <Slider
-                            value={[guidanceScale]}
-                            min={1}
-                            max={10}
-                            step={0.1}
-                            onValueChange={(value) =>
-                              setGuidanceScale(value[0])
-                            }
-                            className="w-full"
-                          />
-                        </div>
-                        <div className="flex justify-between text-xs text-gray-400 px-1">
-                          <span>1.0</span>
-                          <span>10.0</span>
-                        </div>
-                        <div className="text-right text-sm font-medium bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent">
-                          {guidanceScale.toFixed(1)}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* 种子数设置 */}
-                    <div className="space-y-3 py-1 pb-3">
-                      <div className="flex items-center gap-2">
-                        <div className="rounded-full bg-gradient-to-r from-indigo-400 to-purple-400 p-1.5">
-                          <Dices className="w-3.5 h-3.5 text-white" />
-                        </div>
-                        <Label className="text-sm font-medium text-indigo-800">
-                          种子数
-                        </Label>
-                      </div>
-                      <p className="text-xs text-gray-500 pl-7">
-                        {t("generation.seedDescription")}
-                      </p>
-
-                      <RadioGroup
-                        value={seedMode}
-                        onValueChange={(value) =>
-                          setSeedMode(value as "random" | "fixed")
-                        }
-                        className="flex gap-4 pl-7 mt-2"
-                      >
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem
-                            value="random"
-                            id="random-seed"
-                            className="text-indigo-600 border-indigo-400"
-                          />
-                          <Label
-                            htmlFor="random-seed"
-                            className="cursor-pointer text-sm text-indigo-700"
-                          >
-                            {t("generation.random")}
-                          </Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem
-                            value="fixed"
-                            id="fixed-seed"
-                            className="text-indigo-600 border-indigo-400"
-                          />
-                          <Label
-                            htmlFor="fixed-seed"
-                            className="cursor-pointer text-sm text-indigo-700"
-                          >
-                            {t("generation.fixed")}
-                          </Label>
-                        </div>
-                      </RadioGroup>
-
-                      {seedMode === "fixed" && (
-                        <div className="pl-7 mt-2">
-                          <Input
-                            type="number"
-                            value={seedValue}
-                            onChange={handleSeedValueChange}
-                            min={-1}
-                            max={2147483647}
-                            className="max-w-[200px] border-indigo-200 focus:border-indigo-400 focus:ring-indigo-300/20"
-                          />
-                        </div>
-                      )}
-                    </div>
+                  <div className="flex justify-start">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={fillSample}
+                      className="border-blue-200 text-blue-600 hover:bg-blue-50 bg-transparent"
+                    >
+                      查看示例
+                    </Button>
                   </div>
-                )}
+
+                  {/* 开始创作按钮 */}
+                  <div className="flex justify-center mt-6">
+                    <button
+                      onClick={handleGenerate}
+                      disabled={isGenerating || !content}
+                      className={`
+                        w-full md:w-auto px-6 py-3 
+                        bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700
+                        hover:from-blue-600 hover:via-blue-700 hover:to-blue-800
+                        disabled:from-gray-400 disabled:via-gray-400 disabled:to-gray-400
+                        text-white font-medium rounded-xl
+                        transform hover:scale-[1.02] active:scale-[0.98]
+                        transition-all duration-200
+                        shadow-[0_0_20px_rgba(37,99,235,0.3)]
+                        hover:shadow-[0_0_25px_rgba(37,99,235,0.4)]
+                        disabled:shadow-none
+                        flex items-center justify-center gap-2
+                        ${
+                          isGenerating || !content
+                            ? "cursor-not-allowed opacity-60"
+                            : ""
+                        }
+                      `}
+                    >
+                      {isGenerating ? (
+                        <>
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                          <span>创作中...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Wand2 className="w-5 h-5" />
+                          <span>开始创作</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* 复制剧本和生成图片按钮组 */}
+                  {scriptContent && (
+                    <div className="mt-4 space-y-4">
+                      <div className="flex items-center justify-center gap-4">
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(scriptContent);
+                            toast.success("剧本内容已复制到剪贴板");
+                          }}
+                          className={`
+                            px-5 py-2.5
+                            bg-gradient-to-r from-emerald-500 to-teal-600
+                            hover:from-emerald-600 hover:to-teal-700
+                            text-white font-medium rounded-xl
+                            transform hover:scale-[1.02] active:scale-[0.98]
+                            transition-all duration-200
+                            shadow-[0_0_15px_rgba(16,185,129,0.3)]
+                            hover:shadow-[0_0_20px_rgba(16,185,129,0.4)]
+                            flex items-center gap-2
+                          `}
+                        >
+                          <Copy className="w-4 h-4" />
+                          复制剧本内容
+                        </button>
+                        <button
+                          onClick={handleGenerateImages}
+                          disabled={isGeneratingImages}
+                          className={`
+                            px-5 py-2.5
+                            bg-gradient-to-r from-violet-500 to-purple-600
+                            hover:from-violet-600 hover:to-purple-700
+                            disabled:from-gray-400 disabled:to-gray-500
+                            text-white font-medium rounded-xl
+                            transform hover:scale-[1.02] active:scale-[0.98]
+                            transition-all duration-200
+                            shadow-[0_0_15px_rgba(139,92,246,0.3)]
+                            hover:shadow-[0_0_20px_rgba(139,92,246,0.4)]
+                            disabled:shadow-none
+                            flex items-center gap-2
+                            ${
+                              isGeneratingImages
+                                ? "cursor-not-allowed opacity-60"
+                                : ""
+                            }
+                          `}
+                        >
+                          {isGeneratingImages ? (
+                            <>
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                              <span>生成中...</span>
+                            </>
+                          ) : (
+                            <>
+                              <ImageIcon className="w-4 h-4" />
+                              <span>生成漫画图片</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <pre className="whitespace-pre-wrap text-sm">
+                          {scriptContent}
+                        </pre>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </CardContent>
         </Card>
-
-        {/* Generate Button */}
-        <div className="flex justify-center mt-8 mb-10">
-          <Button
-            onClick={handleGenerate}
-            disabled={!content.trim() || isGenerating}
-            size="lg"
-            className="px-8 py-6 text-lg font-medium rounded-md bg-green-500 hover:bg-green-600 disabled:bg-gray-300 shadow-md flex items-center gap-2"
-          >
-            {isGenerating ? (
-              <>
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2" />
-                {t("generation.generatingScript")}
-              </>
-            ) : (
-              <>
-                <Wand2 className="w-5 h-5 mr-2" />
-                {t("generation.generateScript")}
-              </>
-            )}
-          </Button>
-
-          <Button
-            variant="outline"
-            size="lg"
-            className="ml-4 px-8 py-6 text-lg font-medium rounded-md border-gray-200 text-gray-600 hover:bg-gray-50"
-          >
-            {t("hero.button.secondary")}
-          </Button>
-        </div>
 
         {/* Error Display */}
         {error && (
@@ -1666,6 +1610,114 @@ export default function ComicGenerator() {
           </Card>
         )}
       </div>
+
+      {/* 生成的图片显示区域 */}
+      {scriptContent && (
+        <div className="mt-8 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-medium text-gray-800">
+              生成的漫画图片
+            </h3>
+            <button
+              onClick={handleGenerateImages}
+              disabled={isGeneratingImages}
+              className={`
+                px-6 py-2.5
+                bg-gradient-to-r from-purple-500 to-pink-500
+                hover:from-purple-600 hover:to-pink-600
+                disabled:from-gray-400 disabled:to-gray-500
+                text-white font-medium rounded-xl
+                transform hover:scale-[1.02] active:scale-[0.98]
+                transition-all duration-200
+                shadow-[0_0_15px_rgba(168,85,247,0.3)]
+                hover:shadow-[0_0_20px_rgba(168,85,247,0.4)]
+                disabled:shadow-none
+                flex items-center gap-2
+                ${isGeneratingImages ? "cursor-not-allowed opacity-60" : ""}
+              `}
+            >
+              {isGeneratingImages ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>生成中...</span>
+                </>
+              ) : (
+                <>
+                  <ImageIcon className="w-5 h-5" />
+                  <span>生成漫画图片</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* 错误提示 */}
+          {imageGenerationError && (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
+              <div className="flex items-start gap-3">
+                <div className="p-1.5 bg-red-100 text-red-600 rounded-lg">
+                  <XCircle className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-red-900">
+                    图片生成失败
+                  </h4>
+                  <p className="mt-1 text-sm text-red-700">
+                    {imageGenerationError}
+                  </p>
+                  <button
+                    onClick={handleGenerateImages}
+                    disabled={isGeneratingImages}
+                    className="mt-3 text-sm text-red-600 hover:text-red-700 font-medium flex items-center gap-1.5"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    重试
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 生成的图片网格 */}
+          {generatedImages.length > 0 && !imageGenerationError && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {generatedImages.map((image) => (
+                <div
+                  key={image.index}
+                  className="relative aspect-square rounded-xl overflow-hidden shadow-lg group hover:shadow-xl transition-shadow"
+                >
+                  <img
+                    src={image.url}
+                    alt={`生成的漫画图片 ${image.index}`}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="absolute bottom-4 right-4 flex items-center gap-2 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
+                    <button
+                      onClick={() => handleDownloadImage(image)}
+                      className="px-4 py-2 bg-white text-gray-800 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-2 shadow-md"
+                    >
+                      <Download className="w-4 h-4" />
+                      下载图片
+                    </button>
+                    <button
+                      onClick={() => window.open(image.url, "_blank")}
+                      className="px-4 py-2 bg-white text-gray-800 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-2 shadow-md"
+                    >
+                      <Eye className="w-4 h-4" />
+                      查看大图
+                    </button>
+                  </div>
+                  {/* 场景编号 */}
+                  <div className="absolute top-4 left-4 px-4 py-2 bg-white/90 backdrop-blur-sm text-gray-800 rounded-lg shadow-md flex items-center gap-2">
+                    <ImageIcon className="w-4 h-4 text-blue-500" />
+                    <span className="font-medium">场景 {image.index}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* FAQ Section */}
       <div ref={faqRef} className="mt-16 pt-8 border-t border-blue-100">

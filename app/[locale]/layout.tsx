@@ -1,23 +1,30 @@
+import { Inter } from "next/font/google";
+import { ThemeProvider } from "@/components/theme-provider";
 import { NextIntlClientProvider } from "next-intl";
 import { notFound } from "next/navigation";
-import { ReactNode } from "react";
-import { ThemeProvider } from "@/components/theme-provider";
-import { Inter } from "next/font/google";
 import "../globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
+// 生成静态路由参数
 export function generateStaticParams() {
   return [{ locale: "en" }, { locale: "zh" }];
 }
 
+// 元数据配置
+export const metadata = {
+  title: "AI漫画生成器",
+  description: "使用AI技术，将你的创意转化为精彩的漫画剧本",
+};
+
 interface RootLayoutProps {
-  children: ReactNode;
-  params: Promise<{
+  children: React.ReactNode;
+  params: {
     locale: string;
-  }>;
+  };
 }
 
+// 添加LocaleSync组件
 function LocaleSync({ locale }: { locale: string }) {
   // 客户端同步 preferred_locale -> Cookie，并按需跳转
   if (typeof window !== "undefined") {
@@ -44,7 +51,7 @@ export default async function RootLayout({
   children,
   params,
 }: RootLayoutProps) {
-  const { locale } = await params;
+  const { locale } = params;
   let messages;
   try {
     messages = (await import(`../../messages/${locale}.json`)).default;
@@ -54,7 +61,7 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className={inter.className} suppressHydrationWarning>
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ThemeProvider
             attribute="class"
@@ -62,7 +69,6 @@ export default async function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            {/* 同步本地偏好语言 */}
             <LocaleSync locale={locale} />
             {children}
           </ThemeProvider>

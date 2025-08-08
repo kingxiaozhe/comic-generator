@@ -13,6 +13,9 @@ const nextConfig = {
     images: {
         unoptimized: true,
     },
+    env: {
+        ARK_API_KEY: process.env.ARK_API_KEY
+    }
 }
 
 export default withNextIntl(nextConfig);

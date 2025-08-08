@@ -1,208 +1,169 @@
-import { NextRequest, NextResponse } from "next/server";
-import { ComicPanel } from "@/lib/types";
+import { NextResponse } from "next/server";
+import OpenAI from "openai";
 
-const ARK_API_URL =
-  "https://ark.cn-beijing.volces.com/api/v3/images/generations";
-const ARK_API_KEY = "7ef519e4-d564-4f90-8459-94b6ef973e25"; // 在实际生产环境中应使用环境变量
-const BASE_IMAGE_URL =
-  "https://ark-project.tos-cn-beijing.volces.com/doc_image/seededit_i2i.jpeg"; // 示例基础图像URL
+// 打印环境变量信息
+console.log("环境变量状态:", {
+  NODE_ENV: process.env.NODE_ENV,
+  HAS_ARK_API_KEY: !!process.env.ARK_API_KEY,
+  ARK_API_KEY_LENGTH: process.env.ARK_API_KEY?.length || 0,
+});
 
-// 定义比例类型
-type AspectRatioKey =
-  | "1:1"
-  | "3:4"
-  | "4:3"
-  | "16:9"
-  | "9:16"
-  | "2:3"
-  | "3:2"
-  | "21:9"
-  | "custom";
+// 初始化方舟API客户端
+const ark = new OpenAI({
+  apiKey: process.env.ARK_API_KEY || "",
+  baseURL: "https://ark.cn-beijing.volces.com/api/v3",
+});
 
-// 将比例转换为图像尺寸的映射（使用API手册推荐的官方尺寸）
-const aspectRatioToSize: Record<
-  AspectRatioKey,
-  { width: number; height: number }
-> = {
-  "1:1": { width: 1024, height: 1024 }, // （1:1）
-  "3:4": { width: 864, height: 1152 }, // （3:4）
-  "4:3": { width: 1152, height: 864 }, // （4:3）
-  "16:9": { width: 1280, height: 720 }, // （16:9）
-  "9:16": { width: 720, height: 1280 }, // （9:16）
-  "2:3": { width: 832, height: 1248 }, // （2:3）
-  "3:2": { width: 1248, height: 832 }, // （3:2）
-  "21:9": { width: 1512, height: 648 }, // （21:9）
-  custom: { width: 1024, height: 1024 }, // 默认为1:1
-};
+// 添加类型定义
+interface GenerateResponse {
+  data: Array<{
+    url: string;
+    revised_prompt?: string;
+    status?: string;
+  }>;
+}
 
-// 图片风格转换映射
-const styleToPromptModifier: Record<
-  string,
-  { prompt: string; negative?: string }
-> = {
-  anime: {
-    prompt:
-      "anime style, cel shaded, vibrant colors, manga style, Japanese animation",
-    negative: "realistic, photographic, 3d render, low quality",
-  },
-  "comic-book": {
-    prompt:
-      "comic book style, bold outlines, vibrant colors, dynamic composition, superhero style",
-    negative: "realistic, photograph, low contrast",
-  },
-  watercolor: {
-    prompt:
-      "watercolor style, soft edges, flowing colors, artistic, painted, traditional art",
-    negative: "sharp edges, digital art, 3d, photographic",
-  },
-  "pixel-art": {
-    prompt: "pixel art style, 16-bit, retro game aesthetic, pixelated, blocky",
-    negative: "smooth, realistic, high definition, photographic",
-  },
-  "chinese-painting": {
-    prompt:
-      "Chinese ink painting, traditional, elegant brushwork, minimalist, oriental art",
-    negative: "western, colorful, detailed, realistic, modern",
-  },
-  cartoon: {
-    prompt:
-      "cartoon style, simple shapes, bold colors, cute characters, animated",
-    negative: "realistic, detailed, complex, photographic",
-  },
-  cyberpunk: {
-    prompt:
-      "cyberpunk style, neon lights, futuristic, high tech, urban dystopia, sci-fi",
-    negative: "natural, rural, vintage, historical, traditional",
-  },
-  sketch: {
-    prompt:
-      "pencil sketch, hand-drawn, line art, black and white, artistic drawing",
-    negative: "colored, photographic, realistic, 3d render",
-  },
-};
+interface GenerateImageRequest {
+  script: string;
+  style: string;
+  steps?: number;
+  samplingMethod?: string;
+  styleStrength?: number;
+  negativePrompt?: string;
+  clarity?: number;
+  saturation?: number;
+  composition?: string;
+  samplesPerScene?: number;
+  variationAmount?: number;
+}
 
-export async function POST(request: NextRequest) {
+// 构建优化后的提示词
+function buildOptimizedPrompt(
+  script: string,
+  style: string,
+  composition: string = "balanced",
+  styleStrength: number = 0.8,
+  clarity: number = 0.5,
+  saturation: number = 0.5
+): string {
+  // 基础提示词
+  const basePrompt = `${style} style comic art, ${script}`;
+
+  // 构图提示词
+  const compositionPrompt =
+    {
+      balanced: "balanced composition, harmonious layout",
+      dynamic: "dynamic composition, dramatic angles, energetic layout",
+      minimal: "minimal composition, clean layout, focus on subject",
+    }[composition] || "balanced composition";
+
+  // 质量提升关键词
+  const qualityBoost = `high quality, ${
+    clarity > 0.7 ? "ultra sharp focus" : "sharp focus"
+  }, professional lighting`;
+
+  // 风格增强
+  const styleBoost = `${
+    saturation > 0.7 ? "vibrant" : "natural"
+  } colors, ${compositionPrompt}`;
+
+  // 组合提示词
+  return `${basePrompt}, ${qualityBoost}, ${styleBoost}`;
+}
+
+export async function POST(request: Request) {
   try {
-    const {
-      panels,
-      aspectRatio = "16:9",
-      seed = -1,
-      guidanceScale = 2.5,
-      style = "anime",
-    } = await request.json();
-
-    if (!panels || !Array.isArray(panels) || panels.length === 0) {
+    // 验证API密钥
+    if (!process.env.ARK_API_KEY) {
+      console.error("未检测到有效的方舟 API Key");
       return NextResponse.json(
-        { error: "缺少有效的漫画剧本数据" },
+        {
+          error: "请配置方舟 API Key",
+          details:
+            "在项目根目录创建 .env.local 文件，添加：ARK_API_KEY=your-api-key-here",
+        },
+        { status: 500 }
+      );
+    }
+
+    const {
+      script,
+      style,
+      composition,
+      styleStrength,
+      clarity,
+      saturation,
+      samplesPerScene = 1,
+    } = (await request.json()) as GenerateImageRequest;
+
+    // 输入验证
+    if (!script) {
+      return NextResponse.json(
+        {
+          error: "缺少必要参数",
+          details: "剧本内容不能为空",
+        },
         { status: 400 }
       );
     }
 
-    // 获取风格修饰符
-    const styleModifier =
-      styleToPromptModifier[style] || styleToPromptModifier["anime"];
-
-    // 处理每个场景，生成对应的图像
-    const imageGenerationPromises = panels.map(
-      async (panel: ComicPanel, index: number) => {
-        try {
-          // 从剧本内容中提取关键信息，构建适合图像生成的提示词
-          const basePrompt = `漫画风格的场景：${panel.content.substring(
-            0,
-            200
-          )}`;
-
-          // 添加风格修饰符
-          const prompt = `${basePrompt}, ${styleModifier.prompt}`;
-          const negativePrompt = styleModifier.negative || "";
-
-          // 获取对应比例的尺寸
-          const dimensions = aspectRatioToSize[
-            aspectRatio as AspectRatioKey
-          ] || { width: 1024, height: 1024 };
-
-          // 为每个面板生成不同的种子，如果用户选择了固定种子，则所有面板使用相同的种子
-          const panelSeed =
-            seed === -1 ? Math.floor(Math.random() * 2147483647) : seed;
-
-          console.log(
-            `生成场景 ${index + 1}, 使用尺寸: ${dimensions.width}x${
-              dimensions.height
-            }, 比例: ${aspectRatio}, 种子: ${panelSeed}, 文本权重: ${guidanceScale}, 风格: ${style}`
-          );
-
-          // 准备API请求体，注意确保完全按照API文档的要求
-          const requestBody = {
-            model: "doubao-seededit-3-0-i2i-250628",
-            prompt: prompt,
-            negative_prompt: negativePrompt,
-            image: BASE_IMAGE_URL,
-            response_format: "url",
-            width: dimensions.width, // 使用width和height分别指定宽高
-            height: dimensions.height,
-            seed: panelSeed, // 使用计算得到的种子值
-            guidance_scale: guidanceScale, // 使用传入的文本权重值
-            watermark: false, // 移除水印
-          };
-
-          console.log(`请求体: ${JSON.stringify(requestBody)}`);
-
-          // 调用ARK图像生成API
-          const response = await fetch(ARK_API_URL, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${ARK_API_KEY}`,
-            },
-            body: JSON.stringify(requestBody),
-          });
-
-          if (!response.ok) {
-            const errorData = await response.text();
-            console.error(`ARK API 错误 (场景 ${index + 1}):`, errorData);
-            throw new Error(`生成图像失败: ${response.statusText}`);
-          }
-
-          const data = await response.json();
-          return {
-            id: panel.id,
-            content: panel.content,
-            imageUrl: data.data?.[0]?.url || panel.imageUrl, // 如果有新图像URL则更新，否则保留原样
-            sceneNumber: index + 1,
-          };
-        } catch (err) {
-          console.error(`处理场景 ${index + 1} 时出错:`, err);
-          // 出错时返回原始面板数据，但添加错误信息
-          return {
-            ...panel,
-            imageUrl: panel.imageUrl,
-            sceneNumber: index + 1,
-            error: err instanceof Error ? err.message : "图像生成失败",
-          };
-        }
-      }
+    // 构建优化后的提示词
+    const prompt = buildOptimizedPrompt(
+      script,
+      style,
+      composition,
+      styleStrength,
+      clarity,
+      saturation
     );
 
-    // 等待所有图像生成完成
-    const results = await Promise.allSettled(imageGenerationPromises);
-
-    // 处理结果
-    const generatedPanels = results.map((result, index) => {
-      if (result.status === "fulfilled") {
-        return result.value;
-      } else {
-        // 如果某个请求失败，返回原始面板但带有错误信息
-        return {
-          ...panels[index],
-          sceneNumber: index + 1,
-          error: "图像生成请求失败",
-        };
-      }
+    console.log("正在生成图片，使用以下参数：", {
+      prompt,
+      samples: samplesPerScene,
     });
 
-    return NextResponse.json({ panels: generatedPanels });
-  } catch (error) {
-    console.error("图像生成API路由错误:", error);
-    return NextResponse.json({ error: "服务器内部错误" }, { status: 500 });
+    // 调用方舟 API 生成图片
+    const response = (await ark.images.generate({
+      model: "doubao-seedream-3-0-t2i-250415",
+      prompt: prompt,
+      size: "1024x1024",
+      n: samplesPerScene,
+      response_format: "url",
+      extra_body: {
+        watermark: true,
+      },
+    })) as GenerateResponse;
+
+    if (!response.data || !Array.isArray(response.data)) {
+      throw new Error("API 返回格式错误");
+    }
+
+    // 处理生成结果
+    const images = response.data.map((img, index) => ({
+      url: img.url,
+      index: index + 1,
+      generation_time: new Date().toISOString(),
+    }));
+
+    console.log(`成功生成 ${images.length} 张图片`);
+
+    return NextResponse.json({
+      success: true,
+      images,
+      metadata: {
+        prompt,
+        timestamp: new Date().toISOString(),
+      },
+    });
+  } catch (error: any) {
+    console.error("图片生成过程出错:", error);
+    return NextResponse.json(
+      {
+        error: "图片生成失败",
+        details: error.message || "未知错误",
+        timestamp: new Date().toISOString(),
+      },
+      { status: 500 }
+    );
   }
 }

@@ -6,7 +6,15 @@ interface UserSettings {
   advancedSettings: {
     seed: number; // 随机种子
     guidanceScale: number; // 引导比例
-    // 可以根据需要添加更多高级设置
+    steps: number; // 生成步数
+    samplingMethod: string; // 采样方法
+    styleStrength: number; // 风格强度
+    negativePrompt: string; // 负面提示词
+    clarity: number; // 图片清晰度
+    saturation: number; // 色彩饱和度
+    composition: string; // 构图偏好
+    samplesPerScene: number; // 每个场景的生成数量
+    variationAmount: number; // 变体程度
   };
 }
 
@@ -18,6 +26,15 @@ const DEFAULT_SETTINGS: UserSettings = {
   advancedSettings: {
     seed: -1,
     guidanceScale: 7.5,
+    steps: 40,
+    samplingMethod: "euler_a", // 默认采样方法
+    styleStrength: 0.8, // 0-1 之间
+    negativePrompt: "", // 默认为空
+    clarity: 0.5, // 0-1 之间
+    saturation: 0.5, // 0-1 之间
+    composition: "balanced", // balanced, dynamic, minimal
+    samplesPerScene: 1, // 默认每个场景生成1张
+    variationAmount: 0.3, // 0-1 之间
   },
 };
 
@@ -103,5 +120,29 @@ export class UserSettingsService {
   static clearSettings(): void {
     if (typeof window === "undefined") return;
     localStorage.removeItem(this.SETTINGS_KEY);
+  }
+
+  // 获取采样方法选项
+  static getSamplingMethods() {
+    return [
+      { id: "euler_a", name: "Euler Ancestral", description: "平衡质量和速度" },
+      { id: "euler", name: "Euler", description: "更快的生成速度" },
+      { id: "ddim", name: "DDIM", description: "更稳定的结果" },
+      { id: "dpmsolver", name: "DPM-Solver", description: "更高质量的细节" },
+      {
+        id: "dpmsolver++",
+        name: "DPM-Solver++",
+        description: "增强版DPM-Solver",
+      },
+    ];
+  }
+
+  // 获取构图选项
+  static getCompositionOptions() {
+    return [
+      { id: "balanced", name: "平衡构图", description: "元素分布均匀" },
+      { id: "dynamic", name: "动态构图", description: "强调动感和戏剧性" },
+      { id: "minimal", name: "简约构图", description: "突出主体，简化背景" },
+    ];
   }
 }
