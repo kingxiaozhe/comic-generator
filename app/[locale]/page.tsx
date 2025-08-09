@@ -10,36 +10,40 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
-  Sparkles,
-  ImageIcon,
-  Download,
-  Eye,
-  Heart,
-  MessageCircle,
-  Share,
-  Wand2,
-  AlertCircle,
-  ChevronDown,
-  ChevronRight,
-  Sliders,
-  Dices,
-  SlidersHorizontal,
-  ChevronsUpDown,
-  Check,
-  ChevronUp,
   Home,
-  HelpCircle,
-  PlusCircle,
-  MinusCircle,
   Tag,
   BookOpen,
   Users,
-  Key,
-  ClipboardCopy,
+  HelpCircle,
+  Wand2,
   Loader2,
   Copy,
+  Download,
+  ImageIcon,
+  Eye,
+  AlertCircle,
+  Key,
+  Sparkles,
+  SlidersHorizontal,
+  Dices,
+  Settings2,
   XCircle,
   RefreshCw,
+  LayoutGrid,
+  Palette,
+  Square,
+  Heart,
+  MessageCircle,
+  Share,
+  PlusCircle,
+  MinusCircle,
+  ChevronDown,
+  ChevronRight,
+  Sliders,
+  ChevronsUpDown,
+  Check,
+  ChevronUp,
+  ClipboardCopy,
 } from "lucide-react";
 import { ComicPanel } from "@/lib/types";
 import { ActivationModal } from "@/components/ActivationModal";
@@ -60,6 +64,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { AdvancedSettings } from "@/components/AdvancedSettings";
+import { ArticlePreview } from "@/components/ArticlePreview";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // 图片比例选项
 type AspectRatio = {
@@ -1138,24 +1144,130 @@ export default function ComicGenerator() {
                   />
                 </div>
 
+                {/* 场景数量选择 */}
+                <div className="space-y-4">
+                  <Label>场景数量</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {[2, 4, 6, 8].map((count) => (
+                      <button
+                        key={count}
+                        onClick={() => handleSceneCountChange(count)}
+                        className={`
+                          px-4 py-2 rounded-full text-sm font-medium
+                          transition-all duration-200
+                          ${
+                            sceneCount === count
+                              ? "bg-blue-500 text-white shadow-md"
+                              : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
+                          }
+                        `}
+                      >
+                        {count}个场景
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 图片比例选择 */}
+                <div className="space-y-4">
+                  <Label>图片比例</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { id: "1:1", label: "1:1 方形" },
+                      { id: "3:4", label: "3:4 竖屏" },
+                      { id: "4:3", label: "4:3 横屏" },
+                      { id: "16:9", label: "16:9 宽屏" },
+                      { id: "9:16", label: "9:16 竖直" },
+                    ].map((ratio) => (
+                      <button
+                        key={ratio.id}
+                        onClick={() => handleAspectRatioChange(ratio.id)}
+                        className={`
+                          px-4 py-2 rounded-full text-sm font-medium
+                          transition-all duration-200
+                          ${
+                            aspectRatio === ratio.id
+                              ? "bg-blue-500 text-white shadow-md"
+                              : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
+                          }
+                        `}
+                      >
+                        {ratio.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 {/* 图片风格选择 */}
                 <div className="space-y-4">
                   <Label>选择图片风格</Label>
-                  <Select value={imageStyle} onValueChange={setImageStyle}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="选择图片风格" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="写实风格">写实风格</SelectItem>
-                      <SelectItem value="水彩风格">水彩风格</SelectItem>
-                      <SelectItem value="油画风格">油画风格</SelectItem>
-                      <SelectItem value="素描风格">素描风格</SelectItem>
-                      <SelectItem value="动漫风格">动漫风格</SelectItem>
-                      <SelectItem value="赛博朋克">赛博朋克</SelectItem>
-                      <SelectItem value="未来主义">未来主义</SelectItem>
-                      <SelectItem value="极简主义">极简主义</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {imageStyles.map((style) => (
+                      <div
+                        key={style.id}
+                        onClick={() => handleStyleChange(style.id)}
+                        className={`
+                          relative p-3 rounded-xl cursor-pointer transition-all duration-200
+                          ${
+                            selectedStyle === style.id
+                              ? "bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-400 shadow-md"
+                              : "bg-white border border-gray-200 hover:border-blue-300 hover:shadow-sm"
+                          }
+                        `}
+                      >
+                        <div className="flex flex-col items-center text-center gap-2">
+                          <div className="text-2xl">{style.icon}</div>
+                          <div className="font-medium text-gray-800">
+                            {style.name}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {style.description}
+                          </div>
+                        </div>
+                        {style.tag && (
+                          <div className="absolute top-2 right-2">
+                            <Badge
+                              variant="secondary"
+                              className={`
+                                text-xs
+                                ${
+                                  style.tag === "hot"
+                                    ? "bg-red-100 text-red-800"
+                                    : ""
+                                }
+                                ${
+                                  style.tag === "classic"
+                                    ? "bg-amber-100 text-amber-800"
+                                    : ""
+                                }
+                                ${
+                                  style.tag === "realistic"
+                                    ? "bg-green-100 text-green-800"
+                                    : ""
+                                }
+                                ${
+                                  style.tag === "cute"
+                                    ? "bg-pink-100 text-pink-800"
+                                    : ""
+                                }
+                                ${
+                                  style.tag === "art"
+                                    ? "bg-purple-100 text-purple-800"
+                                    : ""
+                                }
+                              `}
+                            >
+                              {style.tag === "hot" && "热门"}
+                              {style.tag === "classic" && "经典"}
+                              {style.tag === "realistic" && "写实"}
+                              {style.tag === "cute" && "可爱"}
+                              {style.tag === "art" && "艺术"}
+                            </Badge>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
                 {/* 高级设置 */}
@@ -1207,13 +1319,38 @@ export default function ComicGenerator() {
 
               {/* 内容创作区域 */}
               <div className="space-y-6 pt-4 border-t border-gray-100">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-medium">
-                    2
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-medium">
+                      2
+                    </div>
+                    <h3 className="text-lg font-medium text-gray-800">
+                      内容创作
+                    </h3>
                   </div>
-                  <h3 className="text-lg font-medium text-gray-800">
-                    内容创作
-                  </h3>
+
+                  {/* 当前选择指示器 */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-1.5 bg-blue-50 px-2.5 py-1 rounded-full">
+                      <LayoutGrid className="w-3.5 h-3.5 text-blue-600" />
+                      <span className="text-xs font-medium text-blue-700">
+                        {sceneCount}个场景
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 bg-indigo-50 px-2.5 py-1 rounded-full">
+                      <Square className="w-3.5 h-3.5 text-indigo-600" />
+                      <span className="text-xs font-medium text-indigo-700">
+                        {aspectRatio}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 bg-violet-50 px-2.5 py-1 rounded-full">
+                      <Palette className="w-3.5 h-3.5 text-violet-600" />
+                      <span className="text-xs font-medium text-violet-700">
+                        {imageStyles.find((style) => style.id === selectedStyle)
+                          ?.name || selectedStyle}
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-4">
@@ -1463,10 +1600,10 @@ export default function ComicGenerator() {
                             variant="outline"
                             className="text-xs border-pink-200 text-pink-600"
                             onClick={() =>
-                              handleDownloadImage(
-                                panel.imageUrl,
-                                `${t("generation.scene")}${i + 1}`
-                              )
+                              handleDownloadImage({
+                                url: panel.imageUrl || "",
+                                index: i + 1,
+                              })
                             }
                           >
                             <Download className="w-3 h-3 mr-1" />
@@ -1613,46 +1750,10 @@ export default function ComicGenerator() {
 
       {/* 生成的图片显示区域 */}
       {scriptContent && (
-        <div className="mt-8 space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-medium text-gray-800">
-              生成的漫画图片
-            </h3>
-            <button
-              onClick={handleGenerateImages}
-              disabled={isGeneratingImages}
-              className={`
-                px-6 py-2.5
-                bg-gradient-to-r from-purple-500 to-pink-500
-                hover:from-purple-600 hover:to-pink-600
-                disabled:from-gray-400 disabled:to-gray-500
-                text-white font-medium rounded-xl
-                transform hover:scale-[1.02] active:scale-[0.98]
-                transition-all duration-200
-                shadow-[0_0_15px_rgba(168,85,247,0.3)]
-                hover:shadow-[0_0_20px_rgba(168,85,247,0.4)]
-                disabled:shadow-none
-                flex items-center gap-2
-                ${isGeneratingImages ? "cursor-not-allowed opacity-60" : ""}
-              `}
-            >
-              {isGeneratingImages ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  <span>生成中...</span>
-                </>
-              ) : (
-                <>
-                  <ImageIcon className="w-5 h-5" />
-                  <span>生成漫画图片</span>
-                </>
-              )}
-            </button>
-          </div>
-
+        <div className="mt-8">
           {/* 错误提示 */}
           {imageGenerationError && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
+            <div className="p-4 mb-4 bg-red-50 border border-red-200 rounded-xl">
               <div className="flex items-start gap-3">
                 <div className="p-1.5 bg-red-100 text-red-600 rounded-lg">
                   <XCircle className="w-5 h-5" />
@@ -1677,44 +1778,113 @@ export default function ComicGenerator() {
             </div>
           )}
 
-          {/* 生成的图片网格 */}
-          {generatedImages.length > 0 && !imageGenerationError && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {generatedImages.map((image) => (
-                <div
-                  key={image.index}
-                  className="relative aspect-square rounded-xl overflow-hidden shadow-lg group hover:shadow-xl transition-shadow"
-                >
-                  <img
-                    src={image.url}
-                    alt={`生成的漫画图片 ${image.index}`}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <div className="absolute bottom-4 right-4 flex items-center gap-2 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
+          {/* 生成图片按钮 */}
+          {generatedImages.length === 0 && !isGeneratingImages && (
+            <div className="flex justify-center mb-6">
+              <button
+                onClick={handleGenerateImages}
+                disabled={isGeneratingImages}
+                className={`
+                  px-6 py-3
+                  bg-gradient-to-r from-purple-500 to-pink-500
+                  hover:from-purple-600 hover:to-pink-600
+                  text-white font-medium rounded-xl
+                  transform hover:scale-[1.02] active:scale-[0.98]
+                  transition-all duration-200
+                  shadow-[0_0_15px_rgba(168,85,247,0.3)]
+                  hover:shadow-[0_0_20px_rgba(168,85,247,0.4)]
+                  flex items-center gap-2
+                `}
+              >
+                <ImageIcon className="w-5 h-5" />
+                <span>生成漫画图片</span>
+              </button>
+            </div>
+          )}
+
+          {/* 加载中状态 */}
+          {isGeneratingImages && (
+            <div className="flex flex-col items-center justify-center py-8">
+              <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin mb-4"></div>
+              <p className="text-gray-600 font-medium">
+                正在生成漫画图片，请稍候...
+              </p>
+            </div>
+          )}
+
+          {/* 图片预览区域 */}
+          {generatedImages.length > 0 && (
+            <Tabs defaultValue="preview" className="max-w-3xl mx-auto">
+              <TabsList className="mb-4">
+                <TabsTrigger value="preview">公众号预览</TabsTrigger>
+                <TabsTrigger value="gallery">图片画廊</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="preview" className="mt-0">
+                <ArticlePreview
+                  images={generatedImages}
+                  title={content.split("\n")[0] || "我的漫画故事"}
+                  scriptContent={scriptContent}
+                  onDownloadAll={handleDownloadAll}
+                  onDownloadImage={handleDownloadImage}
+                />
+              </TabsContent>
+
+              <TabsContent value="gallery" className="mt-0">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-medium text-gray-800">
+                      生成的漫画图片
+                    </h3>
                     <button
-                      onClick={() => handleDownloadImage(image)}
-                      className="px-4 py-2 bg-white text-gray-800 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-2 shadow-md"
+                      onClick={handleDownloadAll}
+                      className="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg hover:from-blue-600 hover:to-indigo-600 transition-colors flex items-center gap-2 shadow-md hover:shadow-lg"
                     >
                       <Download className="w-4 h-4" />
-                      下载图片
-                    </button>
-                    <button
-                      onClick={() => window.open(image.url, "_blank")}
-                      className="px-4 py-2 bg-white text-gray-800 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-2 shadow-md"
-                    >
-                      <Eye className="w-4 h-4" />
-                      查看大图
+                      一键下载全部 ({generatedImages.length} 张)
                     </button>
                   </div>
-                  {/* 场景编号 */}
-                  <div className="absolute top-4 left-4 px-4 py-2 bg-white/90 backdrop-blur-sm text-gray-800 rounded-lg shadow-md flex items-center gap-2">
-                    <ImageIcon className="w-4 h-4 text-blue-500" />
-                    <span className="font-medium">场景 {image.index}</span>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {generatedImages.map((image) => (
+                      <div
+                        key={`${image.index}-${image.variant || 0}`}
+                        className="relative aspect-square rounded-xl overflow-hidden shadow-lg group hover:shadow-xl transition-shadow"
+                      >
+                        <img
+                          src={image.url}
+                          alt={`生成的漫画图片 ${image.index}`}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="absolute bottom-4 right-4 flex items-center gap-2 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
+                          <button
+                            onClick={() => handleDownloadImage(image)}
+                            className="px-4 py-2 bg-white text-gray-800 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-2 shadow-md"
+                          >
+                            <Download className="w-4 h-4" />
+                            下载图片
+                          </button>
+                          <button
+                            onClick={() => window.open(image.url, "_blank")}
+                            className="px-4 py-2 bg-white text-gray-800 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-2 shadow-md"
+                          >
+                            <Eye className="w-4 h-4" />
+                            查看大图
+                          </button>
+                        </div>
+                        {/* 场景编号 */}
+                        <div className="absolute top-4 left-4 px-4 py-2 bg-white/90 backdrop-blur-sm text-gray-800 rounded-lg shadow-md flex items-center gap-2">
+                          <ImageIcon className="w-4 h-4 text-blue-500" />
+                          <span className="font-medium">
+                            场景 {image.index}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              ))}
-            </div>
+              </TabsContent>
+            </Tabs>
           )}
         </div>
       )}

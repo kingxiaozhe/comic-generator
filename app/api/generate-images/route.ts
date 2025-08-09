@@ -129,9 +129,6 @@ export async function POST(request: Request) {
       size: "1024x1024",
       n: samplesPerScene,
       response_format: "url",
-      extra_body: {
-        watermark: true,
-      },
     })) as GenerateResponse;
 
     if (!response.data || !Array.isArray(response.data)) {
