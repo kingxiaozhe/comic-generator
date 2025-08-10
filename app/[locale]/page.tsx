@@ -304,6 +304,9 @@ export default function ComicGenerator() {
   const [composition, setComposition] = useState("balanced");
   const [samplesPerScene, setSamplesPerScene] = useState(1);
   const [variationAmount, setVariationAmount] = useState(0.3);
+  // 识别到的人物一致性提示（完全由用户文本自动抽取，可编辑）
+  const [characterHints, setCharacterHints] = useState<string[]>([]);
+  const [useCharacterHints, setUseCharacterHints] = useState<boolean>(true);
 
   // 添加激活码相关状态
   const [showActivationModal, setShowActivationModal] = useState(false);
@@ -332,6 +335,27 @@ export default function ComicGenerator() {
   const [guidanceScale, setGuidanceScale] = useState<number>(
     () => UserSettingsService.getSettings().advancedSettings.guidanceScale
   );
+
+  // 结果区域滚动定位与平滑滚动
+  const resultsRef = useRef<HTMLDivElement | null>(null);
+  const smoothScrollToElement = (
+    el: HTMLElement,
+    offset: number = -180,
+    durationMs: number = 1000
+  ) => {
+    const startY = window.scrollY || window.pageYOffset;
+    const targetY = el.getBoundingClientRect().top + startY + offset;
+    const startTime = performance.now();
+    const easeInOut = (t: number) =>
+      t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+    const step = (now: number) => {
+      const progress = Math.min((now - startTime) / durationMs, 1);
+      const eased = easeInOut(progress);
+      window.scrollTo(0, startY + (targetY - startY) * eased);
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  };
 
   // 更新场景数量
   const handleSceneCountChange = (count: number) => {
@@ -681,6 +705,13 @@ export default function ComicGenerator() {
 
     console.log(`content=>${buildFullContent(content)}`);
 
+    // 平滑滚动到结果区域（锚点在Loading/Results上方）
+    setTimeout(() => {
+      if (resultsRef.current) {
+        smoothScrollToElement(resultsRef.current, -180, 1000);
+      }
+    }, 50);
+
     try {
       const response = await fetch("/api/generate", {
         method: "POST",
@@ -729,6 +760,65 @@ export default function ComicGenerator() {
     }
   };
 
+  // 客户端提取角色信息（与后端类似正则，宽松容错）
+  const extractCharacterHintsClient = (script: string): string[] => {
+    if (!script) return [];
+    const hints: string[] = [];
+    // 行级：张三（husband）：黑发，红衣
+    const lineMatches = script.match(
+      /^[\t ]*([\u4e00-\u9fa5A-Za-z]{1,10})(?:（([^）]+)）)?[：:][\t ]*([^\n]+)$/gm
+    );
+    if (lineMatches) {
+      for (const raw of lineMatches) {
+        const m = raw.match(
+          /^[\t ]*([\u4e00-\u9fa5A-Za-z]{1,10})(?:（([^）]+)）)?[：:][\t ]*([^\n]+)$/
+        );
+        if (m) {
+          const name = m[1];
+          const role = m[2] ? ` (${m[2]})` : "";
+          const desc = m[3].trim();
+          hints.push(`${name}${role}: ${desc}`);
+        }
+      }
+    }
+    // 段内：人物：...
+    const peopleBlock = script.match(/人物[：:][\t ]*([^\n]+)/);
+    if (peopleBlock) {
+      const parts = peopleBlock[1]
+        .split(/[，,、]/)
+        .map((s) => s.trim())
+        .filter(Boolean);
+      for (const part of parts) {
+        const nameMatch = part.match(
+          /^([\u4e00-\u9fa5]{2,4}|[A-Za-z]{2,20})(?:（([^）]+)）)?/
+        );
+        if (nameMatch) {
+          const nm = nameMatch[1];
+          const role = nameMatch[2] ? ` (${nameMatch[2]})` : "";
+          const rest = part.replace(nameMatch[0], "").trim();
+          if (rest) hints.push(`${nm}${role}: ${rest}`);
+        }
+      }
+    }
+    // 去重
+    const map = new Map<string, string>();
+    for (const h of hints) {
+      const key = h.split(":")[0].trim();
+      if (!map.has(key) || map.get(key)!.length < h.length) map.set(key, h);
+    }
+    return Array.from(map.values());
+  };
+
+  // 当剧本生成后，自动抽取角色
+  useEffect(() => {
+    if (scriptContent) {
+      const extracted = extractCharacterHintsClient(scriptContent);
+      setCharacterHints(extracted);
+    } else {
+      setCharacterHints([]);
+    }
+  }, [scriptContent]);
+
   // 处理生成图片
   const handleGenerateImages = async () => {
     if (!scriptContent) {
@@ -743,17 +833,14 @@ export default function ComicGenerator() {
       // 从剧本中提取场景
       const sceneRegex = /场景：([\s\S]*?)(?=场景：|$)/g;
       let match;
-      const scenes = [];
+      const scenes: { number: number; content: string }[] = [];
       let sceneNumber = 1;
 
       // 提取所有"场景："开头的部分
       while ((match = sceneRegex.exec(scriptContent)) !== null) {
         const fullSceneContent = match[0].trim();
         if (fullSceneContent) {
-          scenes.push({
-            number: sceneNumber++,
-            content: fullSceneContent,
-          });
+          scenes.push({ number: sceneNumber++, content: fullSceneContent });
         }
       }
 
@@ -762,14 +849,9 @@ export default function ComicGenerator() {
         const paragraphs = scriptContent
           .split(/\n\s*\n/)
           .filter((p) => p.trim())
-          .map((p, idx) => ({
-            number: idx + 1,
-            content: p.trim(),
-          }));
+          .map((p, idx) => ({ number: idx + 1, content: p.trim() }));
 
-        if (paragraphs.length > 0) {
-          scenes.push(...paragraphs);
-        }
+        if (paragraphs.length > 0) scenes.push(...paragraphs);
       }
 
       console.log(`从剧本中提取了 ${scenes.length} 个场景:`, scenes);
@@ -785,8 +867,29 @@ export default function ComicGenerator() {
         const sceneNumber = scene.number;
         const sceneContent = scene.content;
 
+        // 将可编辑的角色提示前置到每个场景中（仅当启用且有内容时）
+        const charactersBlock =
+          useCharacterHints && characterHints.length > 0
+            ? `角色设定：${characterHints.join(
+                "；"
+              )}\n请在每张图保持角色一致（use same character faces, consistent outfits）\n`
+            : "";
+
+        // 全局一致性指令（无论多少张图片均统一画风、调色与镜头语言）
+        const globalConsistencyBlock = [
+          `全局一致性：所有图片必须保持同一画风、线条粗细、阴影与上色方式、镜头语言与取景规则。`,
+          `风格约束：use same art style, same character faces, consistent outfits across all images`,
+          `背景一致：同一客厅布局（沙发/窗帘/茶几等空间关系固定），仅允许时间与光影变化`,
+          `调色方案：统一色调与光比，cinematic lighting，soft light，color grading 一致`,
+          `构图习惯：一致的边框留白与视觉层次，panel framing 一致`,
+          `比例参考：aspect ratio ${aspectRatio}`,
+          `图片风格：${selectedStyle} / ${imageStyle}`,
+        ].join("\n");
+
+        const finalPrompt = `${charactersBlock}${globalConsistencyBlock}\n${sceneContent}`;
+
         console.log(`处理场景 ${sceneNumber}:`, {
-          content: sceneContent.substring(0, 100) + "...",
+          content: finalPrompt.substring(0, 120) + "...",
           style: imageStyle,
         });
 
@@ -794,7 +897,7 @@ export default function ComicGenerator() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            script: sceneContent,
+            script: finalPrompt,
             style: imageStyle,
             steps,
             samplingMethod,
@@ -988,6 +1091,7 @@ export default function ComicGenerator() {
   };
 
   const locale = useLocale();
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-indigo-50">
       {/* 导航栏 */}
@@ -1113,6 +1217,225 @@ export default function ComicGenerator() {
           </CardContent>
         </Card>
 
+        {/* Step 1: 内容创作（提前到第一步） */}
+        <Card className="mb-8 border border-blue-100 shadow-md bg-white/90 backdrop-blur-sm">
+          <CardContent className="p-6">
+            <div className="space-y-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-medium">
+                    1
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-800">
+                    内容创作
+                  </h3>
+                </div>
+                {/* 当前选择指示器 */}
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1.5 bg-blue-50 px-2.5 py-1 rounded-full">
+                    <LayoutGrid className="w-3.5 h-3.5 text-blue-600" />
+                    <span className="text-xs font-medium text-blue-700">
+                      {sceneCount}个场景
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 bg-indigo-50 px-2.5 py-1 rounded-full">
+                    <Square className="w-3.5 h-3.5 text-indigo-600" />
+                    <span className="text-xs font-medium text-indigo-700">
+                      {aspectRatio}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 bg-violet-50 px-2.5 py-1 rounded-full">
+                    <Palette className="w-3.5 h-3.5 text-violet-600" />
+                    <span className="text-xs font-medium text-violet-700">
+                      {imageStyles.find((style) => style.id === selectedStyle)
+                        ?.name || selectedStyle}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium text-gray-700">
+                    输入你的创意内容
+                  </label>
+                  <span
+                    className={`text-sm ${
+                      content.length > maxLength
+                        ? "text-red-500"
+                        : "text-gray-500"
+                    }`}
+                  >
+                    {t("input.remaining", {
+                      count: maxLength - content.length,
+                    })}
+                  </span>
+                </div>
+
+                <Textarea
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  placeholder="请在这里输入你想要转换成漫画的故事或创意..."
+                  className="min-h[120px] resize-none border-blue-200 focus:border-blue-400 focus:ring-blue-400/20"
+                  maxLength={maxLength}
+                />
+
+                <div className="flex justify-start">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={fillSample}
+                    className="border-blue-200 text-blue-600 hover:bg-blue-50 bg-transparent"
+                  >
+                    查看示例
+                  </Button>
+                </div>
+
+                {/* 开始创作按钮 */}
+                <div className="flex justify-center mt-6">
+                  <button
+                    onClick={handleGenerate}
+                    disabled={isGenerating || !content}
+                    className={`
+                      w-full md:w-auto px-6 py-3 
+                      bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700
+                      hover:from-blue-600 hover:via-blue-700 hover:to-blue-800
+                      disabled:from-gray-400 disabled:via-gray-400 disabled:to-gray-400
+                      text-white font-medium rounded-xl
+                      transform hover:scale-[1.02] active:scale-[0.98]
+                      transition-all duration-200
+                      shadow-[0_0_20px_rgba(37,99,235,0.3)]
+                      hover:shadow-[0_0_25px_rgba(37,99,235,0.4)]
+                      disabled:shadow-none
+                      flex items-center justify-center gap-2
+                      ${
+                        isGenerating || !content
+                          ? "cursor-not-allowed opacity-60"
+                          : ""
+                      }
+                    `}
+                  >
+                    {isGenerating ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        <span>创作中...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Wand2 className="w-5 h-5" />
+                        <span>开始创作</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* 复制剧本 与 生成图片 */}
+                {scriptContent && (
+                  <>
+                    <div className="flex items-center justify-center gap-4 mt-4">
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(scriptContent);
+                          toast.success("剧本内容已复制到剪贴板");
+                        }}
+                        className="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-medium rounded-xl transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] flex items-center gap-2"
+                      >
+                        <Copy className="w-4 h-4" />
+                        复制剧本内容
+                      </button>
+                      <button
+                        onClick={handleGenerateImages}
+                        disabled={isGeneratingImages}
+                        className={`px-5 py-2.5 bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-medium rounded-xl transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shadow-[0_0_15px_rgba(139,92,246,0.3)] hover:shadow-[0_0_20px_rgba(139,92,246,0.4)] disabled:shadow-none flex items-center gap-2 ${
+                          isGeneratingImages
+                            ? "cursor-not-allowed opacity-60"
+                            : ""
+                        }`}
+                      >
+                        {isGeneratingImages ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <span>生成中...</span>
+                          </>
+                        ) : (
+                          <>
+                            <ImageIcon className="w-4 h-4" />
+                            <span>生成漫画图片</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-4 mt-4">
+                      <pre className="whitespace-pre-wrap text-sm">
+                        {scriptContent}
+                      </pre>
+                    </div>
+
+                    {/* 已识别人物（可编辑） */}
+                    <div className="rounded-lg border border-blue-100 bg-white/70 backdrop-blur-sm p-4 mt-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="text-sm font-medium text-gray-800">
+                          已识别人物（可编辑，基于你的文字自动抽取）
+                        </h4>
+                        <label className="text-xs text-gray-600 flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={useCharacterHints}
+                            onChange={(e) =>
+                              setUseCharacterHints(e.target.checked)
+                            }
+                          />
+                          生成时启用一致性提示
+                        </label>
+                      </div>
+                      {characterHints.length === 0 ? (
+                        <p className="text-xs text-gray-500">
+                          未从剧本文字中识别到人物清单。你可以直接在上方剧本中补充"人物：..."或逐行使用"姓名（角色）：外观描述"格式。
+                        </p>
+                      ) : (
+                        <div className="space-y-2">
+                          {characterHints.map((hint, idx) => (
+                            <div key={idx} className="flex items-center gap-2">
+                              <Input
+                                value={hint}
+                                onChange={(e) => {
+                                  const arr = [...characterHints];
+                                  arr[idx] = e.target.value;
+                                  setCharacterHints(arr);
+                                }}
+                              />
+                              <button
+                                onClick={() =>
+                                  setCharacterHints(
+                                    characterHints.filter((_, i) => i !== idx)
+                                  )
+                                }
+                                className="px-2 py-1 text-xs text-red-600 hover:text-red-700"
+                              >
+                                删除
+                              </button>
+                            </div>
+                          ))}
+                          <div>
+                            <button
+                              onClick={() =>
+                                setCharacterHints([...characterHints, ""])
+                              }
+                              className="mt-1 text-xs text-blue-600 hover:text-blue-700"
+                            >
+                              + 添加一行
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Configuration Section */}
         <Card className="mb-8 border border-blue-100 shadow-md bg-white/90 backdrop-blur-sm">
           <CardContent className="p-6">
@@ -1128,7 +1451,7 @@ export default function ComicGenerator() {
               <div className="space-y-6">
                 <div className="flex items-center gap-2 mb-4">
                   <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-medium">
-                    1
+                    2
                   </div>
                   <h3 className="text-lg font-medium text-gray-800">
                     创作设置
@@ -1152,15 +1475,11 @@ export default function ComicGenerator() {
                       <button
                         key={count}
                         onClick={() => handleSceneCountChange(count)}
-                        className={`
-                          px-4 py-2 rounded-full text-sm font-medium
-                          transition-all duration-200
-                          ${
-                            sceneCount === count
-                              ? "bg-blue-500 text-white shadow-md"
-                              : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
-                          }
-                        `}
+                        className={`${
+                          sceneCount === count
+                            ? "bg-blue-500 text-white shadow-md"
+                            : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
+                        } px-4 py-2 rounded-full text-sm font-medium transition-all duration-200`}
                       >
                         {count}个场景
                       </button>
@@ -1182,15 +1501,11 @@ export default function ComicGenerator() {
                       <button
                         key={ratio.id}
                         onClick={() => handleAspectRatioChange(ratio.id)}
-                        className={`
-                          px-4 py-2 rounded-full text-sm font-medium
-                          transition-all duration-200
-                          ${
-                            aspectRatio === ratio.id
-                              ? "bg-blue-500 text-white shadow-md"
-                              : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
-                          }
-                        `}
+                        className={`${
+                          aspectRatio === ratio.id
+                            ? "bg-blue-500 text-white shadow-md"
+                            : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
+                        } px-4 py-2 rounded-full text-sm font-medium transition-all duration-200`}
                       >
                         {ratio.label}
                       </button>
@@ -1206,14 +1521,11 @@ export default function ComicGenerator() {
                       <div
                         key={style.id}
                         onClick={() => handleStyleChange(style.id)}
-                        className={`
-                          relative p-3 rounded-xl cursor-pointer transition-all duration-200
-                          ${
-                            selectedStyle === style.id
-                              ? "bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-400 shadow-md"
-                              : "bg-white border border-gray-200 hover:border-blue-300 hover:shadow-sm"
-                          }
-                        `}
+                        className={`${
+                          selectedStyle === style.id
+                            ? "bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-400 shadow-md"
+                            : "bg-white border border-gray-200 hover:border-blue-300 hover:shadow-sm"
+                        } relative p-3 rounded-xl cursor-pointer transition-all duration-200`}
                       >
                         <div className="flex flex-col items-center text-center gap-2">
                           <div className="text-2xl">{style.icon}</div>
@@ -1228,34 +1540,27 @@ export default function ComicGenerator() {
                           <div className="absolute top-2 right-2">
                             <Badge
                               variant="secondary"
-                              className={`
-                                text-xs
-                                ${
-                                  style.tag === "hot"
-                                    ? "bg-red-100 text-red-800"
-                                    : ""
-                                }
-                                ${
-                                  style.tag === "classic"
-                                    ? "bg-amber-100 text-amber-800"
-                                    : ""
-                                }
-                                ${
-                                  style.tag === "realistic"
-                                    ? "bg-green-100 text-green-800"
-                                    : ""
-                                }
-                                ${
-                                  style.tag === "cute"
-                                    ? "bg-pink-100 text-pink-800"
-                                    : ""
-                                }
-                                ${
-                                  style.tag === "art"
-                                    ? "bg-purple-100 text-purple-800"
-                                    : ""
-                                }
-                              `}
+                              className={`text-xs ${
+                                style.tag === "hot"
+                                  ? "bg-red-100 text-red-800"
+                                  : ""
+                              } ${
+                                style.tag === "classic"
+                                  ? "bg-amber-100 text-amber-800"
+                                  : ""
+                              } ${
+                                style.tag === "realistic"
+                                  ? "bg-green-100 text-green-800"
+                                  : ""
+                              } ${
+                                style.tag === "cute"
+                                  ? "bg-pink-100 text-pink-800"
+                                  : ""
+                              } ${
+                                style.tag === "art"
+                                  ? "bg-purple-100 text-purple-800"
+                                  : ""
+                              }`}
                             >
                               {style.tag === "hot" && "热门"}
                               {style.tag === "classic" && "经典"}
@@ -1273,15 +1578,15 @@ export default function ComicGenerator() {
                 {/* 高级设置 */}
                 <AdvancedSettings
                   settings={{
-                    steps: steps,
-                    samplingMethod: samplingMethod,
-                    styleStrength: styleStrength,
-                    negativePrompt: negativePrompt,
-                    clarity: clarity,
-                    saturation: saturation,
-                    composition: composition,
-                    samplesPerScene: samplesPerScene,
-                    variationAmount: variationAmount,
+                    steps,
+                    samplingMethod,
+                    styleStrength,
+                    negativePrompt,
+                    clarity,
+                    saturation,
+                    composition,
+                    samplesPerScene,
+                    variationAmount,
                   }}
                   onChange={(key, value) => {
                     switch (key) {
@@ -1319,182 +1624,7 @@ export default function ComicGenerator() {
 
               {/* 内容创作区域 */}
               <div className="space-y-6 pt-4 border-t border-gray-100">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-medium">
-                      2
-                    </div>
-                    <h3 className="text-lg font-medium text-gray-800">
-                      内容创作
-                    </h3>
-                  </div>
-
-                  {/* 当前选择指示器 */}
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1.5 bg-blue-50 px-2.5 py-1 rounded-full">
-                      <LayoutGrid className="w-3.5 h-3.5 text-blue-600" />
-                      <span className="text-xs font-medium text-blue-700">
-                        {sceneCount}个场景
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5 bg-indigo-50 px-2.5 py-1 rounded-full">
-                      <Square className="w-3.5 h-3.5 text-indigo-600" />
-                      <span className="text-xs font-medium text-indigo-700">
-                        {aspectRatio}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5 bg-violet-50 px-2.5 py-1 rounded-full">
-                      <Palette className="w-3.5 h-3.5 text-violet-600" />
-                      <span className="text-xs font-medium text-violet-700">
-                        {imageStyles.find((style) => style.id === selectedStyle)
-                          ?.name || selectedStyle}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <label className="text-sm font-medium text-gray-700">
-                      输入你的创意内容
-                    </label>
-                    <span
-                      className={`text-sm ${
-                        content.length > maxLength
-                          ? "text-red-500"
-                          : "text-gray-500"
-                      }`}
-                    >
-                      {t("input.remaining", {
-                        count: maxLength - content.length,
-                      })}
-                    </span>
-                  </div>
-
-                  <Textarea
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                    placeholder="请在这里输入你想要转换成漫画的故事或创意..."
-                    className="min-h-[120px] resize-none border-blue-200 focus:border-blue-400 focus:ring-blue-400/20"
-                    maxLength={maxLength}
-                  />
-
-                  <div className="flex justify-start">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={fillSample}
-                      className="border-blue-200 text-blue-600 hover:bg-blue-50 bg-transparent"
-                    >
-                      查看示例
-                    </Button>
-                  </div>
-
-                  {/* 开始创作按钮 */}
-                  <div className="flex justify-center mt-6">
-                    <button
-                      onClick={handleGenerate}
-                      disabled={isGenerating || !content}
-                      className={`
-                        w-full md:w-auto px-6 py-3 
-                        bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700
-                        hover:from-blue-600 hover:via-blue-700 hover:to-blue-800
-                        disabled:from-gray-400 disabled:via-gray-400 disabled:to-gray-400
-                        text-white font-medium rounded-xl
-                        transform hover:scale-[1.02] active:scale-[0.98]
-                        transition-all duration-200
-                        shadow-[0_0_20px_rgba(37,99,235,0.3)]
-                        hover:shadow-[0_0_25px_rgba(37,99,235,0.4)]
-                        disabled:shadow-none
-                        flex items-center justify-center gap-2
-                        ${
-                          isGenerating || !content
-                            ? "cursor-not-allowed opacity-60"
-                            : ""
-                        }
-                      `}
-                    >
-                      {isGenerating ? (
-                        <>
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                          <span>创作中...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Wand2 className="w-5 h-5" />
-                          <span>开始创作</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-
-                  {/* 复制剧本和生成图片按钮组 */}
-                  {scriptContent && (
-                    <div className="mt-4 space-y-4">
-                      <div className="flex items-center justify-center gap-4">
-                        <button
-                          onClick={() => {
-                            navigator.clipboard.writeText(scriptContent);
-                            toast.success("剧本内容已复制到剪贴板");
-                          }}
-                          className={`
-                            px-5 py-2.5
-                            bg-gradient-to-r from-emerald-500 to-teal-600
-                            hover:from-emerald-600 hover:to-teal-700
-                            text-white font-medium rounded-xl
-                            transform hover:scale-[1.02] active:scale-[0.98]
-                            transition-all duration-200
-                            shadow-[0_0_15px_rgba(16,185,129,0.3)]
-                            hover:shadow-[0_0_20px_rgba(16,185,129,0.4)]
-                            flex items-center gap-2
-                          `}
-                        >
-                          <Copy className="w-4 h-4" />
-                          复制剧本内容
-                        </button>
-                        <button
-                          onClick={handleGenerateImages}
-                          disabled={isGeneratingImages}
-                          className={`
-                            px-5 py-2.5
-                            bg-gradient-to-r from-violet-500 to-purple-600
-                            hover:from-violet-600 hover:to-purple-700
-                            disabled:from-gray-400 disabled:to-gray-500
-                            text-white font-medium rounded-xl
-                            transform hover:scale-[1.02] active:scale-[0.98]
-                            transition-all duration-200
-                            shadow-[0_0_15px_rgba(139,92,246,0.3)]
-                            hover:shadow-[0_0_20px_rgba(139,92,246,0.4)]
-                            disabled:shadow-none
-                            flex items-center gap-2
-                            ${
-                              isGeneratingImages
-                                ? "cursor-not-allowed opacity-60"
-                                : ""
-                            }
-                          `}
-                        >
-                          {isGeneratingImages ? (
-                            <>
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                              <span>生成中...</span>
-                            </>
-                          ) : (
-                            <>
-                              <ImageIcon className="w-4 h-4" />
-                              <span>生成漫画图片</span>
-                            </>
-                          )}
-                        </button>
-                      </div>
-                      <div className="bg-gray-50 rounded-lg p-4">
-                        <pre className="whitespace-pre-wrap text-sm">
-                          {scriptContent}
-                        </pre>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                {/* 原内容创作已上移为步骤一 */}
               </div>
             </div>
           </CardContent>
@@ -1537,6 +1667,9 @@ export default function ComicGenerator() {
             </CardContent>
           </Card>
         )}
+
+        {/* 结果区域锚点 */}
+        <div ref={resultsRef} aria-hidden="true" />
 
         {/* Results Section */}
         {comicPanels.length > 0 && !isGenerating && (
@@ -1615,97 +1748,6 @@ export default function ComicGenerator() {
                 ))}
               </div>
 
-              {/* 统一的生成漫画按钮 */}
-              <div className="mt-8 pt-6 border-t border-pink-100 text-center">
-                <div className="flex flex-col items-center">
-                  <div className="mb-4 bg-white/90 rounded-xl px-4 py-2 shadow-sm border border-pink-100">
-                    <div className="text-sm text-gray-600 flex flex-wrap justify-center gap-x-4 gap-y-2">
-                      <div className="flex items-center gap-1">
-                        <Sparkles className="w-3.5 h-3.5 text-purple-500" />
-                        <span>
-                          模型:{" "}
-                          <span className="font-medium text-purple-600">
-                            {
-                              getTextModels(t).find(
-                                (m) => m.id === selectedModel
-                              )?.name
-                            }
-                          </span>
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <SlidersHorizontal className="w-3.5 h-3.5 text-blue-500" />
-                        <span>
-                          图片比例:{" "}
-                          <span className="font-medium text-blue-600">
-                            {aspectRatio}
-                          </span>
-                        </span>
-                      </div>
-                      {showAdvancedSettings && (
-                        <>
-                          <div className="flex items-center gap-1">
-                            <SlidersHorizontal className="w-3.5 h-3.5 text-indigo-500" />
-                            <span>
-                              文本权重:{" "}
-                              <span className="font-medium text-indigo-600">
-                                {guidanceScale.toFixed(1)}
-                              </span>
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Dices className="w-3.5 h-3.5 text-purple-500" />
-                            <span>
-                              种子数:{" "}
-                              <span className="font-medium text-purple-600">
-                                {seedMode === "random"
-                                  ? t("settings.advanced.seed.random")
-                                  : seedValue}
-                              </span>
-                            </span>
-                          </div>
-                        </>
-                      )}
-                      <div className="flex items-center gap-1">
-                        <Sparkles className="w-3.5 h-3.5 text-purple-500" />
-                        <span>
-                          风格:{" "}
-                          <span className="font-medium text-purple-600">
-                            {
-                              imageStyles.find((s) => s.id === selectedStyle)
-                                ?.name
-                            }
-                          </span>
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <Button
-                    onClick={handleGenerateImages}
-                    disabled={isGeneratingImages || comicPanels.length === 0}
-                    size="lg"
-                    className="px-12 py-3 text-lg font-medium rounded-full bg-gradient-to-r from-orange-400 to-pink-500 hover:from-orange-500 hover:to-pink-600 disabled:opacity-70 shadow-lg shadow-orange-200"
-                  >
-                    {isGeneratingImages ? (
-                      <>
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2" />
-                        {t("generation.renderingImages")}...
-                      </>
-                    ) : (
-                      <>
-                        <ImageIcon className="w-5 h-5 mr-2" />
-                        {t("generation.renderHDComic")}
-                      </>
-                    )}
-                  </Button>
-                  <p className="text-sm text-gray-500 mt-2">
-                    {isGeneratingImages
-                      ? t("generation.renderingComic")
-                      : t("generation.willGenerateComic")}
-                  </p>
-                </div>
-              </div>
-
               {/* Social Actions */}
               <div className="mt-8 pt-6 border-t border-pink-100">
                 <div className="flex items-center justify-between">
@@ -1750,7 +1792,7 @@ export default function ComicGenerator() {
 
       {/* 生成的图片显示区域 */}
       {scriptContent && (
-        <div className="mt-8">
+        <div className="mt-8 max-w-5xl mx-auto px-4">
           {/* 错误提示 */}
           {imageGenerationError && (
             <div className="p-4 mb-4 bg-red-50 border border-red-200 rounded-xl">
@@ -1886,6 +1928,90 @@ export default function ComicGenerator() {
               </TabsContent>
             </Tabs>
           )}
+        </div>
+      )}
+
+      {/* 剧本与人物编辑（放在生成图片区域与FAQ之间） */}
+      {scriptContent && (
+        <div className="mt-8 max-w-5xl mx-auto px-4">
+          <Card className="border border-blue-100 shadow-md bg-white/90 backdrop-blur-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-lg font-medium text-gray-800">漫画剧本</h3>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(scriptContent);
+                    toast.success("剧本内容已复制到剪贴板");
+                  }}
+                  className="px-3 py-1.5 text-sm bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-lg flex items-center gap-2"
+                >
+                  <Copy className="w-4 h-4" /> 复制剧本内容
+                </button>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-4">
+                <pre className="whitespace-pre-wrap text-sm">
+                  {scriptContent}
+                </pre>
+              </div>
+
+              {/* 已识别人物（可编辑） */}
+              <div className="rounded-lg border border-blue-100 bg-white/70 backdrop-blur-sm p-4 mt-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm font-medium text-gray-800">
+                    已识别人物（可编辑，基于你的文字自动抽取）
+                  </h4>
+                  <label className="text-xs text-gray-600 flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={useCharacterHints}
+                      onChange={(e) => setUseCharacterHints(e.target.checked)}
+                    />
+                    生成时启用一致性提示
+                  </label>
+                </div>
+                {characterHints.length === 0 ? (
+                  <p className="text-xs text-gray-500">
+                    未从剧本文字中识别到人物清单。你可以直接在上方剧本中补充"人物：..."或逐行使用"姓名（角色）：外观描述"格式。
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {characterHints.map((hint, idx) => (
+                      <div key={idx} className="flex items-center gap-2">
+                        <Input
+                          value={hint}
+                          onChange={(e) => {
+                            const arr = [...characterHints];
+                            arr[idx] = e.target.value;
+                            setCharacterHints(arr);
+                          }}
+                        />
+                        <button
+                          onClick={() =>
+                            setCharacterHints(
+                              characterHints.filter((_, i) => i !== idx)
+                            )
+                          }
+                          className="px-2 py-1 text-xs text-red-600 hover:text-red-700"
+                        >
+                          删除
+                        </button>
+                      </div>
+                    ))}
+                    <div>
+                      <button
+                        onClick={() =>
+                          setCharacterHints([...characterHints, ""])
+                        }
+                        className="mt-1 text-xs text-blue-600 hover:text-blue-700"
+                      >
+                        + 添加一行
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
 

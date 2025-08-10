@@ -37,6 +37,74 @@ interface GenerateImageRequest {
   variationAmount?: number;
 }
 
+// 自动从剧本文字中提取人物标签与外观描述（尽量宽松，容错各类写法）
+function extractCharacterHints(script: string): string[] {
+  const hints: string[] = [];
+
+  // 1) 行级模式：张三（husband）：黑发，红衣
+  const lineMatches = script.match(
+    /^[\t ]*([\u4e00-\u9fa5A-Za-z]{1,10})(?:（([^）]+)）)?[：:][\t ]*([^\n]+)$/gm
+  );
+  if (lineMatches) {
+    for (const raw of lineMatches) {
+      const m = raw.match(
+        /^[\t ]*([\u4e00-\u9fa5A-Za-z]{1,10})(?:（([^）]+)）)?[：:][\t ]*([^\n]+)$/
+      );
+      if (m) {
+        const name = m[1];
+        const role = m[2] ? ` (${m[2]})` : "";
+        const desc = m[3].trim();
+        hints.push(`${name}${role}: ${desc}`);
+      }
+    }
+  }
+
+  // 2) 段落内“人物：”模式，按逗号/顿号切分，尽量抽取“姓名+描述”
+  const peopleBlock = script.match(/人物[：:][\t ]*([^\n]+)/);
+  if (peopleBlock) {
+    const parts = peopleBlock[1]
+      .split(/[，,、]/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+    for (const part of parts) {
+      // 抽取可能的姓名（2-4个中文或英文名片段）
+      const nameMatch = part.match(
+        /^([\u4e00-\u9fa5]{2,4}|[A-Za-z]{2,20})(?:（([^）]+)）)?/
+      );
+      if (nameMatch) {
+        const nm = nameMatch[1];
+        const role = nameMatch[2] ? ` (${nameMatch[2]})` : "";
+        const rest = part.replace(nameMatch[0], "").trim();
+        if (rest) hints.push(`${nm}${role}: ${rest}`);
+      }
+    }
+  }
+
+  // 3) 行内对话说话者（不要求在行首），用于至少提取到"标签"（不强行带外观描述）
+  const inlineSpeakerRegex =
+    /([\u4e00-\u9fa5A-Za-z]{1,10})(?:（([^）]+)）)?[：:]/g;
+  let m;
+  while ((m = inlineSpeakerRegex.exec(script)) !== null) {
+    const name = m[1];
+    const role = m[2] ? ` (${m[2]})` : "";
+    const tag = `${name}${role}`;
+    // 若前两步已加入更详细的 name:desc，则无需再加入纯标签
+    if (!hints.some((h) => h.startsWith(tag + ":") || h === tag)) {
+      hints.push(tag);
+    }
+  }
+
+  // 去重（按名字前缀去重，保留更长描述）
+  const map = new Map<string, string>();
+  for (const h of hints) {
+    const key = h.split(":")[0].trim();
+    if (!map.has(key) || map.get(key)!.length < h.length) {
+      map.set(key, h);
+    }
+  }
+  return Array.from(map.values());
+}
+
 // 构建优化后的提示词
 function buildOptimizedPrompt(
   script: string,
@@ -67,8 +135,38 @@ function buildOptimizedPrompt(
     saturation > 0.7 ? "vibrant" : "natural"
   } colors, ${compositionPrompt}`;
 
+  // 动态人物一致性提示（根据文本自动抽取）
+  const extracted = extractCharacterHints(script);
+  const characterConsistency = [
+    "consistent characters",
+    "人物在所有场景保持相同的服饰、发型、体型与脸型",
+    "use same character faces across all panels",
+    extracted.length > 0
+      ? `Characters (use exact tags every panel): ${extracted.join("; ")}`
+      : "",
+  ]
+    .filter(Boolean)
+    .join(", ");
+
+  // 技术参数提示（生成稳定性与统一风格）
+  const technicalHints = [
+    "comic strip, storyboard, consistent characters",
+    "each panel is an independent image",
+    "8k detail, soft light, cinematic lighting",
+    "use same art style, same character faces",
+    "background keeps the same living-room layout, only time-of-day lighting changes",
+  ].join(", ");
+
   // 组合提示词
-  return `${basePrompt}, ${qualityBoost}, ${styleBoost}`;
+  return [
+    basePrompt,
+    qualityBoost,
+    styleBoost,
+    characterConsistency,
+    technicalHints,
+  ]
+    .filter(Boolean)
+    .join(", ");
 }
 
 export async function POST(request: Request) {
