@@ -214,6 +214,22 @@
         "sketch": {
             "name": "素描风格",
             "description": "黑白线条艺术，简洁优雅"
+        },
+        "simple_humor": {
+            "name": "简笔幽默",
+            "description": "简单有趣的线条风格，充满幽默感"
+        },
+        "chibi_color": {
+            "name": "彩色Q版",
+            "description": "可爱生动的Q版人物，色彩丰富"
+        },
+        "hand_watercolor": {
+            "name": "手绘水彩",
+            "description": "自然流畅的手绘效果，水彩晕染质感"
+        },
+        "vintage_comic": {
+            "name": "复古连环画",
+            "description": "怀旧报纸连环画风格，复古典雅"
         }
     },
     "ratios": {
@@ -653,7 +669,9 @@
         "like": "点赞",
         "comment": "评论",
         "share": "分享",
-        "success": "成功"
+        "success": "成功",
+        "cancel": "取消",
+        "loading": "加载中..."
     },
     "footer": {
         "copyright": "© {year} Comic AI. 版权所有。"

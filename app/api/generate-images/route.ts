@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
+import { buildStylePrompt, getStyleNegativePrompt } from "@/lib/stylePrompts";
 
 // 打印环境变量信息
 console.log("环境变量状态:", {
@@ -114,26 +115,13 @@ function buildOptimizedPrompt(
   clarity: number = 0.5,
   saturation: number = 0.5
 ): string {
-  // 基础提示词
-  const basePrompt = `${style} style comic art, ${script}`;
-
-  // 构图提示词
-  const compositionPrompt =
-    {
-      balanced: "balanced composition, harmonious layout",
-      dynamic: "dynamic composition, dramatic angles, energetic layout",
-      minimal: "minimal composition, clean layout, focus on subject",
-    }[composition] || "balanced composition";
+  // 使用新的风格提示词系统
+  const stylePrompt = buildStylePrompt(style, script);
 
   // 质量提升关键词
   const qualityBoost = `high quality, ${
     clarity > 0.7 ? "ultra sharp focus" : "sharp focus"
   }, professional lighting`;
-
-  // 风格增强
-  const styleBoost = `${
-    saturation > 0.7 ? "vibrant" : "natural"
-  } colors, ${compositionPrompt}`;
 
   // 动态人物一致性提示（根据文本自动抽取）
   const extracted = extractCharacterHints(script);
@@ -148,23 +136,8 @@ function buildOptimizedPrompt(
     .filter(Boolean)
     .join(", ");
 
-  // 技术参数提示（生成稳定性与统一风格）
-  const technicalHints = [
-    "comic strip, storyboard, consistent characters",
-    "each panel is an independent image",
-    "8k detail, soft light, cinematic lighting",
-    "use same art style, same character faces",
-    "background keeps the same living-room layout, only time-of-day lighting changes",
-  ].join(", ");
-
   // 组合提示词
-  return [
-    basePrompt,
-    qualityBoost,
-    styleBoost,
-    characterConsistency,
-    technicalHints,
-  ]
+  return [stylePrompt, qualityBoost, characterConsistency]
     .filter(Boolean)
     .join(", ");
 }
@@ -215,15 +188,21 @@ export async function POST(request: Request) {
       saturation
     );
 
+    // 获取风格特定的负面提示词
+    const negativePrompt = getStyleNegativePrompt(style);
+    const fullPrompt = negativePrompt
+      ? `${prompt} ### Negative prompt: ${negativePrompt}`
+      : prompt;
+
     console.log("正在生成图片，使用以下参数：", {
-      prompt,
+      prompt: fullPrompt,
       samples: samplesPerScene,
     });
 
     // 调用方舟 API 生成图片
     const response = (await ark.images.generate({
       model: "doubao-seedream-3-0-t2i-250415",
-      prompt: prompt,
+      prompt: fullPrompt,
       size: "1024x1024",
       n: samplesPerScene,
       response_format: "url",

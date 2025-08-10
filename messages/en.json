@@ -133,6 +133,22 @@
         "sketch": {
             "name": "Sketch Style",
             "description": "Black-and-white line art, clean and elegant"
+        },
+        "simple_humor": {
+            "name": "Simple Humor Style",
+            "description": "Simple line art with a humorous touch, perfect for comedic stories"
+        },
+        "chibi_color": {
+            "name": "Colorful Chibi Style",
+            "description": "Cute and vibrant chibi characters with rich colors"
+        },
+        "hand_watercolor": {
+            "name": "Hand-painted Watercolor",
+            "description": "Natural hand-drawn feel with watercolor texture and blending"
+        },
+        "vintage_comic": {
+            "name": "Vintage Comic Strip",
+            "description": "Nostalgic newspaper comic strip style, classic and elegant"
         }
     },
     "ratios": {
