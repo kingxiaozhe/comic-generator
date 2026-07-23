@@ -1,13 +1,9 @@
 import { NextResponse } from "next/server";
 import { ComicPanel } from "@/lib/types";
-import { getPromptTemplate } from "@/lib/prompts";
+import { buildMasterPrompt } from "./prompt";
 
 // DeepSeek API配置
 const DEEPSEEK_API_URL = "https://api.siliconflow.cn/v1/chat/completions";
-// 优先使用环境变量中的API密钥，如果不存在则使用硬编码的密钥
-const DEEPSEEK_API_KEY =
-  process.env.DEEPSEEK_API_KEY ||
-  "sk-xgpdmqrgikwkbaacvxbvtkwhxnwjncdvqzlshnzcyswxhsfn";
 
 // 支持的模型列表
 const SUPPORTED_MODELS: Record<string, string> = {
@@ -15,51 +11,6 @@ const SUPPORTED_MODELS: Record<string, string> = {
   "deepseek-7b": "deepseek-ai/deepseek-coder-7b-instruct", // 示例模型ID
   "gpt-3.5": "gpt-3.5-turbo", // 示例模型ID
 };
-
-// 根据用户提供的"漫画脚本创作大师提示词"构建系统提示
-export function buildMasterPrompt(params: {
-  content: string;
-  count?: number;
-  sceneNumber?: number;
-  templateName?: string;
-}): string {
-  const { content, count, sceneNumber, templateName } = params;
-  const template = getPromptTemplate(templateName);
-
-  if (typeof sceneNumber === "number") {
-    // 单张刷新：仅生成指定"第N张"块
-    return `
-${template.core}
-
-【输入内容】
-${content}
-
-${template.outputRulesCommon}
-仅输出第${sceneNumber}张的完整脚本块：
-- 必须以"第${sceneNumber}张"起始行开头
-- 仅包含该张应有的字段（场景/构图/人物/对话/氛围/转场逻辑）
-- 不要输出[核心提炼]、[角色设定]、其他张、或任何额外解释文本
-
-${template.qaChecklist}
-开始创作：`;
-  }
-
-  const n = Number(count) || 4;
-  return `
-${template.core}
-
-【输入内容】
-${content}
-
-${template.outputRulesCommon}
-请创作共${n}张，采用适合${n}张结构的叙事节奏：
-- 逐张依次输出"第1张"至"第${n}张"
-- 每一张内容字数控制在50-120字，信息密度高、画面感强
-- 不要输出除指定结构外的任何多余文本
-
-${template.qaChecklist}
-开始创作：`;
-}
 
 // 解析“第X张”结构为多张内容
 function parsePanelsFromMasterOutput(
@@ -83,6 +34,15 @@ function parsePanelsFromMasterOutput(
 
 export async function POST(request: Request) {
   try {
+    const apiKey = process.env.DEEPSEEK_API_KEY;
+    if (!apiKey) {
+      console.error("DEEPSEEK_API_KEY is not configured");
+      return NextResponse.json(
+        { error: "文本生成服务尚未配置" },
+        { status: 503 }
+      );
+    }
+
     const {
       content,
       count,
@@ -130,7 +90,7 @@ export async function POST(request: Request) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${DEEPSEEK_API_KEY}`,
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
         model: modelId,

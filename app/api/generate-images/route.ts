@@ -2,13 +2,6 @@ import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import { buildStylePrompt, getStyleNegativePrompt } from "@/lib/stylePrompts";
 
-// 打印环境变量信息
-console.log("环境变量状态:", {
-  NODE_ENV: process.env.NODE_ENV,
-  HAS_ARK_API_KEY: !!process.env.ARK_API_KEY,
-  ARK_API_KEY_LENGTH: process.env.ARK_API_KEY?.length || 0,
-});
-
 // 初始化方舟API客户端
 const ark = new OpenAI({
   apiKey: process.env.ARK_API_KEY || "",

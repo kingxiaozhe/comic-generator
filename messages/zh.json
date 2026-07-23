@@ -258,7 +258,8 @@
         "hero": {
             "title": {
                 "prefix": "用AI技术重新定义",
-                "highlight": "漫画创作"
+                "highlight": "漫画创作",
+                "suffix": ""
             },
             "description": "Comic AI致力于将前沿人工智能技术与传统漫画艺术完美融合，为创作者提供无限可能"
         },
