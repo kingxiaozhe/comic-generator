@@ -1,4 +1,4 @@
-import { buildMasterPrompt } from "./route";
+import { buildMasterPrompt } from "./prompt";
 
 // 测试用例
 const testCases = [

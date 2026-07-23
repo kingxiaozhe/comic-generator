@@ -3,8 +3,5 @@
         "deploymentEnabled": {
             "main": true
         }
-    },
-    "env": {
-        "DEEPSEEK_API_KEY": "sk-xgpdmqrgikwkbaacvxbvtkwhxnwjncdvqzlshnzcyswxhsfn"
     }
 }
