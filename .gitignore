@@ -28,6 +28,7 @@ yarn-error.log*
 .env
 .env*.local
 .history/
+output/
 
 # vercel
 .vercel
